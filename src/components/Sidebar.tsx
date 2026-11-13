@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { ChevronDown, ChevronRight, LogOut, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronRight, LogOut, Menu, Moon, Settings, Sun, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const INVENTARIO = [
@@ -31,7 +31,7 @@ const OTROS = [
   { href: "/cargas", label: "Cargas" },
 ];
 
-export function Sidebar({ nombre, rol }: { nombre: string; rol: string }) {
+export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string; esAdmin: boolean }) {
   const path = usePathname();
   const [abierto, setAbierto] = useState(true);
   const [abiertoOps, setAbiertoOps] = useState(true);
@@ -42,6 +42,15 @@ export function Sidebar({ nombre, rol }: { nombre: string; rol: string }) {
     `block rounded-lg px-3 ${sub ? "py-2.5" : "py-3"} text-sm ${
       activo(h) ? "bg-marca text-white font-semibold" : "text-neutral-200 hover:bg-white/10"
     }`;
+
+  const [oscuro, setOscuro] = useState(false);
+  useEffect(() => setOscuro(document.documentElement.dataset.theme === "dark"), []);
+  function cambiarTema() {
+    const nuevo = !oscuro;
+    setOscuro(nuevo);
+    document.documentElement.dataset.theme = nuevo ? "dark" : "light";
+    try { localStorage.setItem("tema", nuevo ? "dark" : "light"); } catch {}
+  }
 
   async function salir() {
     await createClient().auth.signOut();
@@ -98,12 +107,30 @@ export function Sidebar({ nombre, rol }: { nombre: string; rol: string }) {
             <Link key={i.href} href={i.href} className={enlace(i.href)} onClick={() => setMovil(false)}>{i.label}</Link>
           ))}
         </div>
-        <div className="mt-6 border-t border-white/15 pt-4 px-3 text-xs text-neutral-300">
-          <p className="font-semibold text-white">{nombre}</p>
-          <p className="capitalize">{rol}</p>
-          <button onClick={salir} className="mt-3 flex items-center gap-2 text-neutral-200 hover:text-white">
-            <LogOut size={14} /> Cerrar sesión
-          </button>
+        <div className="mt-6 rounded-xl bg-white/5 p-3 text-sm">
+          <div className="flex items-center gap-3 px-1 pb-3">
+            <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-marca font-bold">
+              {nombre.trim().charAt(0).toUpperCase() || "?"}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate font-semibold">{nombre}</p>
+              <p className="text-xs text-neutral-300">{rol}</p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5 border-t border-white/15 pt-2">
+            <button onClick={cambiarTema} className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-neutral-200 hover:bg-white/10">
+              {oscuro ? <Sun size={16} /> : <Moon size={16} />} {oscuro ? "Tema claro" : "Tema oscuro"}
+            </button>
+            {esAdmin && (
+              <Link href="/configuracion" onClick={() => setMovil(false)}
+                className={`flex items-center gap-2 rounded-lg px-2 py-2.5 ${activo("/configuracion") ? "bg-marca text-white" : "text-neutral-200 hover:bg-white/10"}`}>
+                <Settings size={16} /> Configurar
+              </Link>
+            )}
+            <button onClick={salir} className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-neutral-200 hover:bg-white/10">
+              <LogOut size={16} /> Cerrar sesión
+            </button>
+          </div>
         </div>
       </nav>
     </aside>

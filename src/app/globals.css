@@ -1,14 +1,36 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @theme {
   --color-marca: #EC2227;
   --color-marca-oscuro: #B8151A;
   --color-grafito: #2B2B2B;
-  --color-fondo: #F2F2F2;
+  --color-fondo: var(--fondo);
+  --color-tarjeta: var(--tarjeta);
+  --color-texto: var(--texto);
+  --color-suave: var(--suave);
+  --color-borde: var(--borde);
   --font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
 }
 
+:root {
+  --fondo: #F2F2F2;
+  --tarjeta: #FFFFFF;
+  --texto: #2B2B2B;
+  --suave: #5E5E5E;
+  --borde: #D4D4D4;
+}
+:root[data-theme="dark"] {
+  --fondo: #161616;
+  --tarjeta: #232323;
+  --texto: #EDEDED;
+  --suave: #A8A8A8;
+  --borde: #3A3A3A;
+  color-scheme: dark;
+}
+
 body {
-  background: var(--color-fondo);
-  color: var(--color-grafito);
+  background: var(--fondo);
+  color: var(--texto);
 }

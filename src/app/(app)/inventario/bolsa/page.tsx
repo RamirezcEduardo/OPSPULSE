@@ -32,22 +32,22 @@ export default async function BolsaPage() {
     <div className="flex flex-col gap-5">
       <header>
         <h1 className="text-2xl font-extrabold">Bolsa de inventario</h1>
-        <p className="text-sm text-neutral-600">CD11 · gestión CONSIDERAR</p>
+        <p className="text-sm text-suave">CD11 · gestión CONSIDERAR</p>
       </header>
       {error && (
-        <p role="alert" className="rounded-lg bg-white p-4 text-sm text-marca-oscuro">
+        <p role="alert" className="rounded-lg bg-tarjeta p-4 text-sm text-marca-oscuro">
           No se pudo leer la base: {error.message}. ¿Ya se aplicó la migración inicial?
         </p>
       )}
       <section className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
         {kpis.map((k) => (
-          <div key={k.t} className="rounded-xl bg-white p-4">
-            <p className="text-xs text-neutral-600">{k.t}</p>
+          <div key={k.t} className="rounded-xl bg-tarjeta p-4">
+            <p className="text-xs text-suave">{k.t}</p>
             <p className={`mt-1.5 text-xl font-bold whitespace-nowrap ${k.c}`}>{k.v}</p>
           </div>
         ))}
       </section>
-      <section className="rounded-xl bg-white p-5">
+      <section className="rounded-xl bg-tarjeta p-5">
         <h2 className="mb-4 font-semibold">Cierres trimestrales oficiales</h2>
         <div className="flex flex-col gap-3">
           {Object.entries(CIERRES_OFICIALES).map(([q, v]) => (

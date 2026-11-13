@@ -12,7 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="md:flex min-h-screen">
-      <Sidebar nombre={perfil?.nombre ?? user.email ?? ""} rol={ROLES[rol]} />
+      <Sidebar nombre={perfil?.nombre ?? user.email ?? ""} rol={ROLES[rol]} esAdmin={rol === "admin"} />
       <main className="flex-1 min-w-0 px-4 py-6 md:px-8">{children}</main>
     </div>
   );
