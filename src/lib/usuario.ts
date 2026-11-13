@@ -1,5 +1,5 @@
-/** Supabase Auth exige un correo: cada usuario se guarda como <usuario>@opspulse.local (correo interno, no se usa para enviar nada). */
-export const DOMINIO_INTERNO = "opspulse.local";
+/** Supabase Auth exige un correo: cada usuario se guarda como <usuario>@opspulse.ops (correo interno, no se usa para enviar nada). */
+export const DOMINIO_INTERNO = "opspulse.ops";
 export const normalizarUsuario = (u: string) => u.trim().toLowerCase().replace(/\s+/g, "");
 export const usuarioAEmail = (u: string) => `${normalizarUsuario(u)}@${DOMINIO_INTERNO}`;
 export const emailAUsuario = (e: string) => e.replace(`@${DOMINIO_INTERNO}`, "");

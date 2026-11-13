@@ -12,7 +12,7 @@ export function CrearUsuario() {
     <form action={accion} className="rounded-xl bg-tarjeta p-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <h2 className="font-semibold sm:col-span-2 lg:col-span-3">Nuevo usuario</h2>
       <label className="flex flex-col gap-1 text-sm">Nombre<input name="nombre" required className={campo} /></label>
-      <label className="flex flex-col gap-1 text-sm">Usuario<input name="usuario" required autoCapitalize="none" placeholder="ej. 72679263" className={campo} /></label>
+      <label className="flex flex-col gap-1 text-sm">Usuario<input name="usuario" required autoCapitalize="none" placeholder="ej. eramirezc" className={campo} /></label>
       <label className="flex flex-col gap-1 text-sm">Puesto<input name="puesto" className={campo} /></label>
       <label className="flex flex-col gap-1 text-sm">DNI<input name="dni" inputMode="numeric" className={campo} /></label>
       <label className="flex flex-col gap-1 text-sm">Rol
