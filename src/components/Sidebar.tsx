@@ -22,8 +22,12 @@ const OPERACIONES = [
   { href: "/operaciones/picking", label: "Auditoría de picking" },
   { href: "/operaciones/despacho", label: "Auditoría de despacho" },
 ];
+const BUSQUEDA = [
+  { href: "/busqueda/perdidos", label: "Perdidos" },
+  { href: "/busqueda/sin-ubicacion", label: "Sin ubicación" },
+  { href: "/busqueda/shortpick", label: "Shortpick" },
+];
 const OTROS = [
-  { href: "/procesos", label: "Procesos pendientes" },
   { href: "/cargas", label: "Cargas" },
 ];
 
@@ -31,6 +35,7 @@ export function Sidebar({ nombre, rol }: { nombre: string; rol: string }) {
   const path = usePathname();
   const [abierto, setAbierto] = useState(true);
   const [abiertoOps, setAbiertoOps] = useState(true);
+  const [abiertoBus, setAbiertoBus] = useState(true);
   const [movil, setMovil] = useState(false);
   const activo = (h: string) => path === h || path.startsWith(h + "/");
   const enlace = (h: string, sub = false) =>
@@ -73,6 +78,17 @@ export function Sidebar({ nombre, rol }: { nombre: string; rol: string }) {
         {abiertoOps && (
           <div className="ml-3 flex flex-col gap-0.5 border-l border-white/20 pl-3">
             {OPERACIONES.map((i) => (
+              <Link key={i.href} href={i.href} className={enlace(i.href, true)} onClick={() => setMovil(false)}>{i.label}</Link>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setAbiertoBus(!abiertoBus)} aria-expanded={abiertoBus}
+          className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-3 text-left text-sm font-semibold">
+          Control de búsqueda de incidencias {abiertoBus ? <ChevronDown size={16} className="shrink-0" /> : <ChevronRight size={16} className="shrink-0" />}
+        </button>
+        {abiertoBus && (
+          <div className="ml-3 flex flex-col gap-0.5 border-l border-white/20 pl-3">
+            {BUSQUEDA.map((i) => (
               <Link key={i.href} href={i.href} className={enlace(i.href, true)} onClick={() => setMovil(false)}>{i.label}</Link>
             ))}
           </div>
