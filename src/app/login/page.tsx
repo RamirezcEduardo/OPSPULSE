@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { usuarioAEmail } from "@/lib/usuario";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -15,9 +16,9 @@ export default function LoginPage() {
     e.preventDefault();
     setCargando(true);
     setError(null);
-    const { error } = await createClient().auth.signInWithPassword({ email, password });
+    const { error } = await createClient().auth.signInWithPassword({ email: usuarioAEmail(usuario), password });
     setCargando(false);
-    if (error) return setError("Correo o contraseña incorrectos.");
+    if (error) return setError("Usuario o contraseña incorrectos.");
     router.replace("/");
     router.refresh();
   }
@@ -29,8 +30,8 @@ export default function LoginPage() {
         <img src="/logo.svg" alt="OpsPulse · Supply Chain Control" className="h-14 w-auto self-start" />
         <h1 className="text-xl font-bold mt-2">Iniciar sesión</h1>
         <label className="flex flex-col gap-1 text-sm">
-          Correo
-          <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          Usuario
+          <input required autoComplete="username" autoCapitalize="none" value={usuario} onChange={(e) => setUsuario(e.target.value)}
             className="h-11 rounded-lg border border-borde bg-tarjeta px-3 focus:outline-2 focus:outline-marca" />
         </label>
         <label className="flex flex-col gap-1 text-sm">

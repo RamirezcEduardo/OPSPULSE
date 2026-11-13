@@ -12,7 +12,8 @@ export function CrearUsuario() {
     <form action={accion} className="rounded-xl bg-tarjeta p-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <h2 className="font-semibold sm:col-span-2 lg:col-span-3">Nuevo usuario</h2>
       <label className="flex flex-col gap-1 text-sm">Nombre<input name="nombre" required className={campo} /></label>
-      <label className="flex flex-col gap-1 text-sm">Correo<input name="email" type="email" required className={campo} /></label>
+      <label className="flex flex-col gap-1 text-sm">Usuario<input name="usuario" required autoCapitalize="none" placeholder="ej. 72679263" className={campo} /></label>
+      <label className="flex flex-col gap-1 text-sm">Puesto<input name="puesto" className={campo} /></label>
       <label className="flex flex-col gap-1 text-sm">DNI<input name="dni" inputMode="numeric" className={campo} /></label>
       <label className="flex flex-col gap-1 text-sm">Rol
         <select name="rol" defaultValue="lectura" className={campo}>
@@ -32,7 +33,7 @@ export function CrearUsuario() {
   );
 }
 
-type U = { id: string; email: string; nombre: string; dni: string; rol: string; activo: boolean; ultimo: string };
+type U = { id: string; usuario: string; nombre: string; dni: string; puesto: string; rol: string; activo: boolean; ultimo: string };
 
 export function FilaUsuario({ u, esYo }: { u: U; esYo: boolean }) {
   const [pendiente, start] = useTransition();
@@ -46,10 +47,11 @@ export function FilaUsuario({ u, esYo }: { u: U; esYo: boolean }) {
   return (
     <tr className={`border-b border-borde ${pendiente ? "opacity-60" : ""}`}>
       <td className="px-2 py-2 font-medium">{u.nombre || "—"}{esYo && <span className="ml-1 text-xs text-suave">(tú)</span>}</td>
-      <td className="px-2 py-2">{u.email}</td>
+      <td className="px-2 py-2">{u.usuario}</td>
       <td className="px-2 py-2">{u.dni || "—"}</td>
+      <td className="px-2 py-2">{u.puesto || "—"}</td>
       <td className="px-2 py-2">
-        <select aria-label={`Rol de ${u.email}`} defaultValue={u.rol} disabled={esYo}
+        <select aria-label={`Rol de ${u.usuario}`} defaultValue={u.rol} disabled={esYo}
           onChange={(e) => correr(() => cambiarRol(u.id, e.target.value as Rol))}
           className="h-9 rounded-lg border border-borde bg-tarjeta px-2">
           {Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -64,7 +66,7 @@ export function FilaUsuario({ u, esYo }: { u: U; esYo: boolean }) {
       </td>
       <td className="px-2 py-2">
         <button className="text-xs text-marca hover:underline" onClick={() => {
-          const p = prompt(`Nueva contraseña para ${u.email} (mín. 8 caracteres)`);
+          const p = prompt(`Nueva contraseña para ${u.usuario} (mín. 8 caracteres)`);
           if (p) correr(async () => { const r = await nuevaClave(u.id, p); setMsg(r.mensaje); });
         }}>Cambiar contraseña</button>
         {msg && <p role="status" className="text-xs text-suave">{msg}</p>}
