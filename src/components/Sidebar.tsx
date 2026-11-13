@@ -15,15 +15,22 @@ const INVENTARIO = [
   { href: "/inventario/incidencias", label: "Incidencias" },
   { href: "/inventario/eru", label: "ERU / ERI" },
 ];
+const OPERACIONES = [
+  { href: "/operaciones/recepcion", label: "Auditoría de recepción" },
+  { href: "/operaciones/almacen", label: "Auditoría de almacén" },
+  { href: "/operaciones/reabasto", label: "Auditoría de reabasto" },
+  { href: "/operaciones/picking", label: "Auditoría de picking" },
+  { href: "/operaciones/despacho", label: "Auditoría de despacho" },
+];
 const OTROS = [
   { href: "/procesos", label: "Procesos pendientes" },
-  { href: "/reabasto", label: "Auditoría reabasto" },
   { href: "/cargas", label: "Cargas" },
 ];
 
 export function Sidebar({ nombre, rol }: { nombre: string; rol: string }) {
   const path = usePathname();
   const [abierto, setAbierto] = useState(true);
+  const [abiertoOps, setAbiertoOps] = useState(true);
   const [movil, setMovil] = useState(false);
   const activo = (h: string) => path === h || path.startsWith(h + "/");
   const enlace = (h: string, sub = false) =>
@@ -55,6 +62,17 @@ export function Sidebar({ nombre, rol }: { nombre: string; rol: string }) {
         {abierto && (
           <div className="ml-3 flex flex-col gap-0.5 border-l border-white/20 pl-3">
             {INVENTARIO.map((i) => (
+              <Link key={i.href} href={i.href} className={enlace(i.href, true)} onClick={() => setMovil(false)}>{i.label}</Link>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setAbiertoOps(!abiertoOps)} aria-expanded={abiertoOps}
+          className="mt-2 flex items-center justify-between rounded-lg bg-white/10 px-3 py-3 text-sm font-semibold">
+          Seguimiento de operaciones {abiertoOps ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </button>
+        {abiertoOps && (
+          <div className="ml-3 flex flex-col gap-0.5 border-l border-white/20 pl-3">
+            {OPERACIONES.map((i) => (
               <Link key={i.href} href={i.href} className={enlace(i.href, true)} onClick={() => setMovil(false)}>{i.label}</Link>
             ))}
           </div>
