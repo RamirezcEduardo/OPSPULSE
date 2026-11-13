@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-marca: #EC2227;
+  --color-marca-oscuro: #B8151A;
+  --color-grafito: #2B2B2B;
+  --color-fondo: #F2F2F2;
+  --font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: var(--color-fondo);
+  color: var(--color-grafito);
+}
