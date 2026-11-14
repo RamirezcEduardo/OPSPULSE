@@ -155,10 +155,6 @@ export function Formulario5S({ hoy, areas, supervisores }: { hoy: string; areas:
               <button key={a} onClick={() => { vibrar(); setArea(a); }} className={`h-10 rounded-full border px-3 text-sm ${area === a ? "border-marca bg-marca text-white" : "border-borde"}`}>{a}</button>))}
           </div>
           <input placeholder="Pasillo / zona (opcional)" value={ubic} onChange={(e) => setUbic(e.target.value)} className={campo} />
-          <div className="grid grid-cols-3 gap-2">
-            {["Mañana", "Tarde", "Noche"].map((t) => (
-              <button key={t} onClick={() => { vibrar(); setTurno(t); }} className={`h-12 rounded-xl border-2 font-semibold ${turno === t ? "border-marca bg-marca text-white" : "border-borde"}`}>{t}</button>))}
-          </div>
           <p className="mt-1 text-sm font-semibold text-suave">Supervisor del área</p>
           <div className="flex flex-wrap gap-2">
             {supervisores.map((a) => (
@@ -220,7 +216,7 @@ export function Formulario5S({ hoy, areas, supervisores }: { hoy: string; areas:
     <div className="flex flex-col gap-4">
       {Barra}
       <section className="rounded-2xl bg-tarjeta p-5">
-        <p className="text-sm text-suave">{area} {ubic && `· ${ubic}`} {turno && `· ${turno}`}</p>
+        <p className="text-sm text-suave">{area} {ubic && `· ${ubic}`} {sup && `· ${sup}`}</p>
         <p className={`mt-1 text-4xl font-extrabold ${colorNivel(calc.nivel)}`}>{calc.total ?? "—"}%</p>
         <p className={`font-bold ${colorNivel(calc.nivel)}`}>{calc.nivel}</p>
         <div className="mt-4 grid grid-cols-5 gap-2 text-center">

@@ -114,11 +114,11 @@ export default async function CincoS({ searchParams }: { searchParams: Promise<{
           <h2 className="mb-3 font-semibold">Base de auditorías ({r.length})</h2>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[960px] text-sm">
-              <thead className="text-left text-suave"><tr>{["Fecha", "Área", "Zona", "Turno", "Auditor", "Supervisor", "1S", "2S", "3S", "4S", "5S", "Total", "Nivel", "Hallazgos", "Fotos"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead className="text-left text-suave"><tr>{["Fecha", "Área", "Zona", "Auditor", "Supervisor", "1S", "2S", "3S", "4S", "5S", "Total", "Nivel", "Hallazgos", "Fotos"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>{r.map((x) => (
                 <tr key={x.id} className="border-b border-borde align-top">
                   <td className="px-2 py-2 whitespace-nowrap">{fmtFecha(x.fecha + "T12:00:00-05:00")}</td>
-                  <td className="px-2 py-2">{x.area}</td><td className="px-2 py-2">{x.ubicacion ?? "—"}</td><td className="px-2 py-2">{x.turno ?? "—"}</td>
+                  <td className="px-2 py-2">{x.area}</td><td className="px-2 py-2">{x.ubicacion ?? "—"}</td>
                   <td className="px-2 py-2">{x.nombre_auditor ?? "—"}</td><td className="px-2 py-2">{x.supervisor ?? "—"}</td>
                   {[x.pct_s1, x.pct_s2, x.pct_s3, x.pct_s4, x.pct_s5].map((p, i) => <td key={i} className="px-2 py-2 tabular-nums">{p ?? "—"}</td>)}
                   <td className="px-2 py-2 font-bold tabular-nums">{x.pct_total ?? "—"}%</td>
