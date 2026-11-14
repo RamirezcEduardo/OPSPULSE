@@ -1,4 +1,4 @@
-/** Auditoría 5S · CD11 — ítems tomados del formulario actual. */
+/** Auditoría 5S · CD11 — ítems del formulario actual (sin FEFO: el CD no aplica FEFO, lo aplican las boticas). */
 export const BLOQUES_5S: { s: number; nombre: string; items: [string, string][] }[] = [
   { s: 1, nombre: "Seiri (Clasificar)", items: [
     ["1.1", "En el activo / ubicación solo hay productos que le corresponden"],
@@ -10,8 +10,7 @@ export const BLOQUES_5S: { s: number; nombre: string; items: [string, string][] 
     ["2.1", "El producto está en su ubicación correcta (sin mezcla de SKU)"],
     ["2.2", "Etiquetas de ubicación visibles y en buen estado"],
     ["2.3", "Cajas master abiertas correctamente (corte limpio, producto de frente, sin dañar unidades)"],
-    ["2.4", "Se respeta FEFO (fecha más próxima adelante)"],
-    ["2.5", "Pasillos y rutas de tránsito libres"],
+    ["2.4", "Pasillos y rutas de tránsito libres"],
   ] },
   { s: 3, nombre: "Seiso (Limpiar)", items: [
     ["3.1", "Piso limpio, sin derrames ni producto suelto"],
