@@ -159,7 +159,13 @@ export function Formulario5S({ hoy, areas, supervisores }: { hoy: string; areas:
             {["Mañana", "Tarde", "Noche"].map((t) => (
               <button key={t} onClick={() => { vibrar(); setTurno(t); }} className={`h-12 rounded-xl border-2 font-semibold ${turno === t ? "border-marca bg-marca text-white" : "border-borde"}`}>{t}</button>))}
           </div>
-          <input list="sup-5s" placeholder="Supervisor del área" value={sup} onChange={(e) => setSup(e.target.value)} className={campo} />
+          <p className="mt-1 text-sm font-semibold text-suave">Supervisor del área</p>
+          <div className="flex flex-wrap gap-2">
+            {supervisores.map((a) => (
+              <button key={a} onClick={() => { vibrar(); setSup(sup === a ? "" : a); }} aria-pressed={sup === a}
+                className={`h-10 rounded-full border px-3 text-sm ${sup === a ? "border-marca bg-marca text-white" : "border-borde"}`}>{a}</button>))}
+          </div>
+          <input list="sup-5s" placeholder="Otro supervisor…" value={supervisores.includes(sup) ? "" : sup} onChange={(e) => setSup(e.target.value.toUpperCase())} className={campo} />
           <datalist id="sup-5s">{supervisores.map((a) => <option key={a} value={a} />)}</datalist>
           <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className={campo} />
         </div>
