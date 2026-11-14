@@ -34,7 +34,7 @@ Leyenda: **[R]** obligatorio · [O] opcional · ❓ duda a confirmar.
 
 | Módulo | Archivo | Columnas | Reglas |
 |---|---|---|---|
-| Perdidos / Sin ubicación | Control de procesos | Nro LPN [R], Proceso, SKU, Unidades, Valor, Fecha creación, Ubicación actual, Área, Supervisor, Responsable, DNI causó, Fecha levantamiento, DNI levantó, Acción | LPN que deja de figurar → "YA NO FIGURA – PONER FECHA" |
+| Perdidos / Sin ubicación | CONTROL DE PROCESOS › Gestión Perdidos y Sin Ubicación (solo fuente) | Nro LPN [R], Proceso, SKU, Unidades, Valor, Fecha creación, Ubicación actual, Área, Supervisor, Responsable, DNI causó, Fecha levantamiento, DNI levantó, Acción | LPN que deja de figurar → "YA NO FIGURA – PONER FECHA" |
 | Shortpick | ❓ | ❓ ¿Se hace seguimiento de búsqueda igual que perdidos? | ❓ |
 
 ## D. Seguimiento de operaciones
