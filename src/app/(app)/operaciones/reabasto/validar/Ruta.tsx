@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Camera, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Camera, Check, ChevronLeft, ChevronRight, ImageIcon, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { guardarValidacion } from "./actions";
 
@@ -120,10 +120,16 @@ export function Ruta({ tareas, usuarios }: { tareas: Tarea[]; usuarios: string[]
           </label>)}
 
         <div className="flex flex-col gap-2">
-          <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-borde font-semibold">
-            <Camera size={20} /> {subiendo ? "Subiendo…" : "Tomar / subir foto"}
-            <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => e.target.files?.[0] && subirFoto(e.target.files[0])} />
-          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-borde font-semibold">
+              <Camera size={20} /> {subiendo ? "Subiendo…" : "Cámara"}
+              <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => e.target.files?.[0] && subirFoto(e.target.files[0])} />
+            </label>
+            <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-borde font-semibold">
+              <ImageIcon size={20} /> {subiendo ? "Subiendo…" : "Galería"}
+              <input type="file" accept="image/*" multiple className="sr-only" onChange={async (e) => { for (const f of Array.from(e.target.files ?? [])) await subirFoto(f); e.target.value = ""; }} />
+            </label>
+          </div>
           {fotos.length > 0 && <p className="text-xs text-suave">📷 {fotos.length} foto(s) adjunta(s)</p>}
         </div>
         <textarea placeholder="Comentario (opcional)" rows={2} value={coment} onChange={(e) => setComent(e.target.value)} className="rounded-xl border border-borde bg-tarjeta p-3 text-sm" />

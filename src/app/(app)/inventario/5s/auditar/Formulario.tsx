@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Camera, Check, ChevronLeft, ChevronRight, Minus, X } from "lucide-react";
+import { Camera, Check, ChevronLeft, ChevronRight, ImageIcon, Minus, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { BLOQUES_5S, calcular5S, type Respuesta5S } from "@/lib/reglas/cincoS";
 import { guardar5S } from "../actions";
@@ -110,10 +110,19 @@ export function Formulario5S({ hoy, areas, supervisores }: { hoy: string; areas:
   }
 
   const Foto = ({ texto = "Foto de evidencia" }: { texto?: string }) => (
-    <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-borde text-base font-semibold active:scale-[.98]">
-      <Camera size={22} /> {subiendo ? "Subiendo…" : texto} {fotos.length > 0 && <span className="rounded-full bg-marca px-2 text-xs text-white">{fotos.length}</span>}
-      <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => e.target.files?.[0] && subirFoto(e.target.files[0])} />
-    </label>
+    <div className="flex flex-col gap-1.5">
+      <p className="text-sm font-semibold text-suave">{texto} {fotos.length > 0 && <span className="ml-1 rounded-full bg-marca px-2 text-xs text-white">{fotos.length}</span>}</p>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-borde text-base font-semibold active:scale-[.98]">
+          <Camera size={22} /> {subiendo ? "Subiendo…" : "Cámara"}
+          <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => e.target.files?.[0] && subirFoto(e.target.files[0])} />
+        </label>
+        <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-borde text-base font-semibold active:scale-[.98]">
+          <ImageIcon size={22} /> {subiendo ? "Subiendo…" : "Galería"}
+          <input type="file" accept="image/*" multiple className="sr-only" onChange={async (e) => { for (const f of Array.from(e.target.files ?? [])) await subirFoto(f); e.target.value = ""; }} />
+        </label>
+      </div>
+    </div>
   );
 
   // Barra superior fija: progreso + puntaje
