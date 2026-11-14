@@ -1,10 +1,10 @@
 /** Auditoría 5S · CD11 — ítems tomados del formulario actual. */
 export const BLOQUES_5S: { s: number; nombre: string; items: [string, string][] }[] = [
   { s: 1, nombre: "Seiri (Clasificar)", items: [
-    ["1.1", "No hay productos ajenos al activo / ubicación"],
+    ["1.1", "En el activo / ubicación solo hay productos que le corresponden"],
     ["1.2", "Mermas y averías fueron retiradas del activo (no se quedan en la ubicación)"],
-    ["1.3", "No hay cajas vacías, cartón, strech ni basura en racks o pasillo"],
-    ["1.4", "No hay equipos, herramientas o materiales innecesarios en el área"],
+    ["1.3", "Racks y pasillo libres de cajas vacías, cartón, strech y basura"],
+    ["1.4", "En el área solo están los equipos, herramientas y materiales necesarios"],
   ] },
   { s: 2, nombre: "Seiton (Ordenar)", items: [
     ["2.1", "El producto está en su ubicación correcta (sin mezcla de SKU)"],

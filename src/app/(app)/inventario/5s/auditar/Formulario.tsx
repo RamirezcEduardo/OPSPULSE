@@ -7,11 +7,11 @@ import { BLOQUES_5S, calcular5S, type Respuesta5S } from "@/lib/reglas/cincoS";
 import { guardar5S } from "../actions";
 
 const ITEMS = BLOQUES_5S.flatMap((b) => b.items.map(([id, txt]) => ({ id, txt, s: b.s, bloque: b.nombre })));
-const OPCIONES: { v: Respuesta5S; c: string; icon: React.ReactNode; atajo: string }[] = [
-  { v: "Cumple", c: "bg-green-600 border-green-600", icon: <Check size={28} />, atajo: "1" },
-  { v: "Parcial", c: "bg-amber-500 border-amber-500", icon: <Minus size={28} />, atajo: "2" },
-  { v: "No cumple", c: "bg-marca border-marca", icon: <X size={28} />, atajo: "3" },
-  { v: "N.A.", c: "bg-neutral-500 border-neutral-500", icon: <span className="text-2xl font-black leading-none">∅</span>, atajo: "4" },
+const OPCIONES: { v: Respuesta5S; c: string; icon: React.ReactNode; atajo: string; ayuda: string }[] = [
+  { v: "Cumple", c: "bg-green-600 border-green-600", icon: <Check size={26} />, atajo: "1", ayuda: "Sí, está bien" },
+  { v: "Parcial", c: "bg-amber-500 border-amber-500", icon: <Minus size={26} />, atajo: "2", ayuda: "En parte, con fallas" },
+  { v: "No cumple", c: "bg-marca border-marca", icon: <X size={26} />, atajo: "3", ayuda: "No, está mal" },
+  { v: "N.A.", c: "bg-neutral-500 border-neutral-500", icon: <span className="text-2xl font-black leading-none">∅</span>, atajo: "4", ayuda: "No aplica aquí" },
 ];
 const campo = "h-14 w-full rounded-2xl border border-borde bg-tarjeta px-4 text-lg";
 const colorNivel = (n: string | null) =>
@@ -186,14 +186,16 @@ export function Formulario5S({ hoy, areas, supervisores }: { hoy: string; areas:
         <div className="flex flex-1 flex-col justify-center rounded-3xl bg-tarjeta p-5">
           <p className="text-sm font-bold text-marca">{it.id}</p>
           <p className="mt-2 text-xl font-bold leading-snug">{it.txt}</p>
+          <p className="mt-3 text-sm text-suave">¿El área cumple con esto?</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {OPCIONES.map((o) => {
             const sel = resp[it.id] === o.v;
             return (
               <button key={o.v} onClick={() => responder(paso.i, o.v)} aria-pressed={sel}
-                className={`flex h-20 flex-col items-center justify-center gap-1 rounded-2xl border-2 text-lg font-bold transition active:scale-95 ${sel ? `${o.c} text-white` : "border-borde bg-tarjeta"}`}>
-                {o.icon}{o.v}
+                className={`flex h-24 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 text-lg font-bold transition active:scale-95 ${sel ? `${o.c} text-white` : "border-borde bg-tarjeta"}`}>
+                {o.icon}<span>{o.v}</span>
+                <span className={`text-xs font-normal ${sel ? "text-white/90" : "text-suave"}`}>{o.ayuda}</span>
               </button>);
           })}
         </div>
