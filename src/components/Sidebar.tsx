@@ -54,7 +54,7 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
   }
 
   return (
-    <aside className="bg-grafito text-white md:w-64 md:min-h-screen md:shrink-0">
+    <aside className="bg-grafito text-white md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col">
       <div className="flex items-center justify-between px-4 py-4 md:py-6">
         <Link href="/" aria-label="Inicio">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,7 +64,7 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
           {movil ? <X /> : <Menu />}
         </button>
       </div>
-      <nav aria-label="Menú principal" className={`${movil ? "flex" : "hidden"} md:flex flex-col gap-1 px-3 pb-6`}>
+      <nav aria-label="Menú principal" className={`${movil ? "flex" : "hidden"} md:flex flex-col gap-1 px-3 pb-4 md:min-h-0 md:flex-1 md:overflow-y-auto`}>
         <button onClick={() => setAbierto(!abierto)} aria-expanded={abierto}
           className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-3 text-sm font-semibold">
           Control de inventario {abierto ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -103,7 +103,8 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
             <Link key={i.href} href={i.href} className={enlace(i.href)} onClick={() => setMovil(false)}>{i.label}</Link>
           ))}
         </div>
-        <div className="mt-6 rounded-xl bg-white/5 p-3 text-sm">
+      </nav>
+        <div className={`${movil ? "block" : "hidden"} md:block mx-3 mb-3 mt-1 shrink-0 rounded-xl bg-white/5 p-3 text-sm`}>
           <div className="flex items-center gap-3 px-1 pb-3">
             <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-marca font-bold">
               {nombre.trim().charAt(0).toUpperCase() || "?"}
@@ -128,7 +129,6 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
             </button>
           </div>
         </div>
-      </nav>
     </aside>
   );
 }
