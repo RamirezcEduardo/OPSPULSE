@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#EC2227"/><polyline points="10,63 38,63 50,37 64,89 76,47 86,63 110,63" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#24324A"/><stop offset="1" stop-color="#141B26"/></linearGradient>
+    <linearGradient id="onda" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FF8A1A"/><stop offset=".55" stop-color="#FFB13B"/><stop offset="1" stop-color="#FB7A00"/></linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#fondo)"/>
+  <path d="M27 82 C 42 82, 44 38, 60 38 S 78 50, 93 38" fill="none" stroke="url(#onda)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M38 88 C 52 92, 62 78, 74 82" fill="none" stroke="#E9EDF2" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+  <circle cx="27" cy="82" r="7.5" fill="#141B26" stroke="#FB7A00" stroke-width="5"/>
+  <circle cx="93" cy="38" r="7.5" fill="#141B26" stroke="#FB7A00" stroke-width="5"/>
+  <g transform="translate(60 62)">
+    <path d="M0 -11 L11 -5.5 L0 0 L-11 -5.5 Z" fill="#FFFFFF"/>
+    <path d="M-11 -5.5 L0 0 L0 12 L-11 6.5 Z" fill="#D5DCE5"/>
+    <path d="M11 -5.5 L0 0 L0 12 L11 6.5 Z" fill="#AEB8C5"/>
+    <path d="M-5.5 -8.25 L5.5 -2.75 L5.5 1.5" fill="none" stroke="#8C97A6" stroke-width="1.6"/>
+  </g>
+</svg>

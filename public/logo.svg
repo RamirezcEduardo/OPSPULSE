@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 600 160"><circle cx="80" cy="80" r="70" fill="#EC2227"/><polyline points="20,83 54,83 68,52 85,114 100,64 112,83 140,83" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><text x="175" y="92" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="800" fill="#2b2b2b">OPSPULSE</text><text x="178" y="128" font-family="Arial,Helvetica,sans-serif" font-size="21" letter-spacing="5" fill="#777">SUPPLY CHAIN CONTROL</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 600 160">
+  <defs><linearGradient id="o" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FF8A1A"/><stop offset=".55" stop-color="#FFB13B"/><stop offset="1" stop-color="#FB7A00"/></linearGradient></defs>
+  <g transform="translate(10 15) scale(1.08)">
+    <path d="M27 82 C 42 82, 44 38, 60 38 S 78 50, 93 38" fill="none" stroke="url(#o)" stroke-width="9" stroke-linecap="round"/>
+    <path d="M38 88 C 52 92, 62 78, 74 82" fill="none" stroke="#485462" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="27" cy="82" r="7.5" fill="none" stroke="#FB7A00" stroke-width="5"/>
+    <circle cx="93" cy="38" r="7.5" fill="none" stroke="#FB7A00" stroke-width="5"/>
+    <g transform="translate(60 62)"><path d="M0 -11 L11 -5.5 L0 0 L-11 -5.5 Z" fill="#FFFFFF"/><path d="M-11 -5.5 L0 0 L0 12 L-11 6.5 Z" fill="#D5DCE5"/><path d="M11 -5.5 L0 0 L0 12 L11 6.5 Z" fill="#AEB8C5"/></g>
+  </g>
+  <line x1="138" y1="30" x2="138" y2="130" stroke="#485462" stroke-width="2" opacity=".5"/>
+  <text x="156" y="96" font-family="Arial Black,Arial,Helvetica,sans-serif" font-size="64" font-weight="900" font-style="italic" letter-spacing="1"><tspan fill="#1F2B3B">OPS</tspan><tspan fill="#FB7A00">PULSE</tspan></text>
+  <text x="160" y="130" font-family="Arial,Helvetica,sans-serif" font-size="19" font-style="italic" letter-spacing="7.5" fill="#485462">SUPPLY CHAIN CONTROL</text>
+</svg>
