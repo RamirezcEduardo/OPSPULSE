@@ -6,9 +6,9 @@ export const fmtSoles = (n: number | null | undefined) =>
   n == null ? "—" : `S/ ${soles.format(n)}`;
 export const fmtNum = (n: number | null | undefined) => (n == null ? "—" : entero.format(n));
 /** dd/mm/yyyy en hora de Lima */
-export const fmtFecha = (d: string | Date | null | undefined) =>
-  d == null
-    ? "—"
-    : new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", day: "2-digit", month: "2-digit", year: "numeric" }).format(
-        typeof d === "string" ? new Date(d) : d,
-      );
+export const fmtFecha = (d: string | Date | null | undefined) => {
+  if (d == null) return "—";
+  const f = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(f.getTime())) return "—";
+  return new Intl.DateTimeFormat("es-PE", { timeZone: "America/Lima", day: "2-digit", month: "2-digit", year: "numeric" }).format(f);
+};
