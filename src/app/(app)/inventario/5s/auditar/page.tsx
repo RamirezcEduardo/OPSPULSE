@@ -12,8 +12,8 @@ export default async function Auditar5S() {
   const supervisores = [...new Set((data ?? []).map((d) => d.supervisor as string).filter(Boolean))].sort();
   const hoy = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-xl font-extrabold">Auditoría 5S · CD11</h1>
+    <div className="mx-auto flex max-w-xl flex-col gap-3">
+      <h1 className="text-lg font-extrabold">Auditoría 5S · CD11</h1>
       <Formulario5S hoy={hoy} areas={areas} supervisores={supervisores} />
     </div>
   );
