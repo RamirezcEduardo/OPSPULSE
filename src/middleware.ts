@@ -1,15 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
 export async function middleware(request: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) {
-    return new NextResponse(
-      "OpsPulse: faltan las variables NEXT_PUBLIC_SUPABASE_URL y/o NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel (Settings → Environment Variables). Agrégalas y haz Redeploy.",
-      { status: 500, headers: { "content-type": "text/plain; charset=utf-8" } },
-    );
-  }
+  const url = SUPABASE_URL;
+  const key = SUPABASE_ANON_KEY;
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
     url,
