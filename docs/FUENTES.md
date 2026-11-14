@@ -19,3 +19,12 @@
 | Merma | EVOLUTIVO DE MERMA › DATA | Fecha, Ubicacion, lpn, Cod Alternat, Producto, lote, Cantidad actual, Área, Familia, Mes, Sem, Val tot |
 | 5S | AUDITORÍA 5S · CD11 (Form + respuestas) | 21 ítems (ver src/lib/reglas/cincoS.ts) |
 | Incidencias | REPORTE DE INCIDENCIAS POR ÁREA › Respuestas | DNI, Nombre, Área, Fecha, Turno, Tipo, Proceso, Cod Alternat, Ubic. asignada, Unidad, Cantidad, LPN/CJ, ¿Ubicaste?, Ubic. encontrada, Evidencia, ¿Devolviste?, Comentarios |
+
+## Revisión de calidad de datos (14/11/2026)
+
+| Fuente | Filas | Hallazgo | Tratamiento |
+|---|---|---|---|
+| ERU mensual (DATA ERU2026, ene–nov) | 1,246,528 | Cod Alternat limpio en los 11 meses. "Producto" (barras) en notación científica (7.50E+12). Texto con mojibake (`Recuento cÃ­clico`, `ID de instalaciÃ³n`). Fechas `d/m/aaaa h:mm` sin ceros (`1/11/2026 21:20`). | Se usa Cod Alternat; barras se ignora. Encabezados normalizados (se corrige mojibake). Parser de fechas d/m sin ceros. |
+| ERU – códigos | — | Conteo: 37, 38, 41, 42 · Error ERU: 17, 19, 39, 40 · Bolsa: 17, 19, 29, 52 (53 no aparece en nov) · Se descartan: 4, 20, 21, 23, 25, 28, 43, 48, 51, 85 | Según hoja Parámetros del ERU y hoja Bolsa mes. |
+| SHORTPICK mensual | ene 6,553 | **Enero: 6,519 de 6,553 Cod Alternat en notación científica (1.49E+05) → irrecuperable desde ese archivo.** Feb–nov limpios. Fechas `dd/mm/aaaa hh:mm:ss`. | Usar **CONTROL DE SHORTPICK › DATA** (17,846 filas ene–nov, Cod Alternat limpio, fechas en serial Excel). |
+| VAS | — | Cartón = `Nro LPN` (BANSA…); auditor = `Usuario creado` (coincide con DATA_VAS). | — |
