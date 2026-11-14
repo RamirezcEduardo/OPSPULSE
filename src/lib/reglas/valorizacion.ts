@@ -24,7 +24,10 @@ export interface Resumen {
 export function resumir(valores: number[]): Resumen {
   let faltante = 0;
   let sobrante = 0;
-  for (const v of valores) (v < 0 ? (faltante += v) : (sobrante += v));
+  for (const v of valores) {
+    if (v < 0) faltante += v;
+    else sobrante += v;
+  }
   return { faltante: r2(faltante), sobrante: r2(sobrante), neto: r2(faltante + sobrante), movimientos: valores.length };
 }
 
