@@ -18,8 +18,6 @@ const RES: Record<string, string> = {
   "SIN EVALUAR": "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300",
   PENDIENTE: "bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200",
 };
-const PUNTOS = [["p1_ubic_correcta", "P1 Ubicación correcta"], ["p2_sin_mezcla", "P2 Sin mezcla de SKU"], ["p3_cant_cuadra", "P3 Cantidad cuadra"],
-  ["p4_lote", "P4 Lote"], ["p5_fefo", "P5 FEFO"], ["p6_pasillo_limpio", "P6 Pasillo limpio / LPN retirado"]] as const;
 
 function Barras({ titulo, datos }: { titulo: string; datos: [string, number][] }) {
   const max = Math.max(1, ...datos.map(([, v]) => v));
@@ -45,6 +43,9 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
   const { data: ds } = await supabase.from("v_tarea_reabasto").select("dia").order("dia", { ascending: false }).limit(5000);
   const dias = [...new Set((ds ?? []).map((d) => d.dia as string))];
   const dia = dp && dias.includes(dp) ? dp : dias[0];
+  const { data: inc } = await supabase.from("v_incidencias_reabasto_usuario").select("*").order("incidencias", { ascending: false }).limit(15);
+  const { data: val } = dia ? await supabase.from("v_validacion_reabasto").select("clave,validacion,usuario_responsable").eq("dia", dia) : { data: [] };
+  const valPor = new Map((val ?? []).map((v) => [v.clave as string, v]));
   const { data, error } = dia ? await supabase.from("v_tarea_reabasto").select("*").eq("dia", dia).limit(20000) : { data: [], error: null };
   const t = (data ?? []) as T[];
 
@@ -52,20 +53,20 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
   const can = t.filter((x) => x.seguimiento === "CANCELADA").length;
   const pen = t.filter((x) => x.seguimiento === "PENDIENTE");
   const muestra = t.filter((x) => x.motivo_seleccion);
+  muestra.forEach((x) => { const v = valPor.get(x.clave); x.resultado = v?.validacion === "SIN VALIDAR" ? "PENDIENTE" : v?.validacion === "CONFORME" ? "CONFORME" : v ? "NO CONFORME" : x.resultado; x.hallazgo_principal = v?.usuario_responsable ? `Resp.: ${v.usuario_responsable}` : x.hallazgo_principal; });
   const auditadas = muestra.filter((x) => x.resultado === "CONFORME" || x.resultado === "NO CONFORME");
   const conformes = auditadas.filter((x) => x.resultado === "CONFORME").length;
   const g = (xs: T[], k: (x: T) => string | null) => {
     const m = new Map<string, number>(); xs.forEach((x) => m.set(k(x) ?? "Sin dato", (m.get(k(x) ?? "Sin dato") ?? 0) + 1));
     return [...m].sort((a, b) => b[1] - a[1]);
   };
-  const fallasPunto: [string, number][] = PUNTOS.map(([k, n]) => [n, auditadas.filter((x) => x[k] === "No").length] as [string, number]).filter(([, v]) => v > 0);
 
   const kpis = [
     { t: "Tareas programadas", v: fmtNum(t.length) },
     { t: "Finalizadas", v: t.length ? `${((fin / t.length) * 100).toFixed(1)}%` : "—", s: fmtNum(fin) },
     { t: "Canceladas", v: fmtNum(can) },
     { t: "Pendientes", v: fmtNum(pen.length), a: pen.length > 0 },
-    { t: "Auditadas", v: `${auditadas.length} / ${muestra.length}`, s: "de la muestra" },
+    { t: "Validadas", v: `${auditadas.length} / ${muestra.length}`, s: "de la muestra" },
     { t: "% Conforme", v: auditadas.length ? `${((conformes / auditadas.length) * 100).toFixed(1)}%` : "—", a: auditadas.length > conformes },
   ];
 
@@ -98,7 +99,7 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
           <h2 className="mb-3 font-semibold">Muestra de auditoría del día ({muestra.length})</h2>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-sm">
-              <thead className="text-left text-suave"><tr>{["Resultado", "Motivo", "Tarea", "SKU", "Descripción", "Destino", "Usuario", "Hallazgo", ""].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead className="text-left text-suave"><tr>{["Validación", "Motivo", "Tarea", "SKU", "Descripción", "Destino", "Usuario", "Responsable", ""].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>{muestra.sort((a, b) => (a.resultado === "PENDIENTE" ? -1 : 1) - (b.resultado === "PENDIENTE" ? -1 : 1)).map((x) => (
                 <tr key={x.clave} className="border-b border-borde">
                   <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${RES[x.resultado ?? "PENDIENTE"]}`}>{x.resultado ?? "PENDIENTE"}</span></td>
@@ -109,7 +110,7 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
                   <td className="px-2 py-2">{x.ubic_destino}</td>
                   <td className="px-2 py-2">{x.usuario}</td>
                   <td className="px-2 py-2">{x.hallazgo_principal ?? "—"}</td>
-                  <td className="px-2 py-2"><Link href={`/operaciones/reabasto/auditar/${encodeURIComponent(x.clave)}`} className="font-semibold text-marca hover:underline">Auditar</Link></td>
+                  <td className="px-2 py-2"></td>
                 </tr>))}</tbody>
             </table>
           </div>
@@ -133,8 +134,7 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
           <Barras titulo="Tareas por tipo de asignación" datos={g(t, (x) => x.tipo_asignac)} />
           <Barras titulo="Tareas por área de destino" datos={g(t, (x) => x.area).slice(0, 12)} />
           <Barras titulo="Tareas por turno" datos={g(t, (x) => x.turno)} />
-          <Barras titulo="No conformidades por punto del checklist" datos={fallasPunto} />
-          <Barras titulo="No conformes por usuario" datos={g(auditadas.filter((x) => x.resultado === "NO CONFORME"), (x) => x.usuario).slice(0, 10)} />
+          <Barras titulo="Incidencias acumuladas por usuario responsable" datos={(inc ?? []).map((u) => [u.usuario_responsable as string, Number(u.incidencias)] as [string, number])} />
         </div>
       </>)}
     </div>

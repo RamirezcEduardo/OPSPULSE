@@ -36,29 +36,3 @@ export async function cargarReabasto(archivo: string, filas: FilaReabasto[]) {
   return { ok: true, mensaje: `${validas.length} tareas cargadas · ${muestra.size} nuevas en la muestra de auditoría.` };
 }
 
-const OPC = ["Sí", "No", "N.A."];
-export async function guardarAuditoria(_: unknown, form: FormData) {
-  const supabase = await createClient();
-  const { data: cl } = await supabase.auth.getClaims();
-  const uid = cl?.claims?.sub;
-  if (!uid) return { ok: false, mensaje: "Sesión vencida." };
-  const { data: perfil } = await supabase.from("perfil").select("dni").eq("id", uid).maybeSingle();
-  const v = (k: string) => { const x = String(form.get(k) ?? ""); return OPC.includes(x) ? x : null; };
-  const clave = String(form.get("clave"));
-  const cant = String(form.get("cant_contada") ?? "");
-  const { error } = await supabase.from("auditoria_reabasto").upsert({
-    clave,
-    motivo_seleccion: String(form.get("motivo_seleccion") || "MANUAL"),
-    fecha_auditoria: new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }),
-    dni_auditor: perfil?.dni ?? null,
-    p1_ubic_correcta: v("p1"), p2_sin_mezcla: v("p2"), p3_cant_cuadra: v("p3"),
-    cant_contada: cant === "" ? null : Number(cant),
-    p4_lote: v("p4"), p5_fefo: v("p5"), p6_pasillo_limpio: v("p6"),
-    hallazgo_principal: String(form.get("hallazgo") || "") || null,
-    comentario: String(form.get("comentario") || "") || null,
-    auditado_por: uid, auditado_en: new Date().toISOString(),
-  }, { onConflict: "clave" });
-  if (error) return { ok: false, mensaje: error.message };
-  revalidatePath("/operaciones/reabasto");
-  return { ok: true, mensaje: "Auditoría guardada." };
-}
