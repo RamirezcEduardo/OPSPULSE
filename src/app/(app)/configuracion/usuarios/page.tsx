@@ -1,37 +1,18 @@
 import Link from "next/link";
 import { exigirAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { fmtFecha } from "@/lib/formato";
-import { emailAUsuario } from "@/lib/usuario";
 import { CrearUsuario, FilaUsuario } from "./ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function UsuariosPage() {
   const yo = await exigirAdmin();
-  let error: string | null = null;
-  let filas: { id: string; usuario: string; nombre: string; dni: string; puesto: string; rol: string; activo: boolean; ultimo: string }[] = [];
-  try {
-    const admin = createAdminClient();
-    const [{ data: lista, error: e1 }, { data: perfiles }] = await Promise.all([
-      admin.auth.admin.listUsers({ perPage: 1000 }),
-      admin.from("perfil").select("id, nombre, dni, rol, usuario, puesto"),
-    ]);
-    if (e1) throw e1;
-    const porId = new Map((perfiles ?? []).map((p) => [p.id, p]));
-    filas = lista.users.map((u) => ({
-      id: u.id,
-      usuario: porId.get(u.id)?.usuario ?? emailAUsuario(u.email ?? ""),
-      puesto: porId.get(u.id)?.puesto ?? "",
-      nombre: porId.get(u.id)?.nombre ?? "",
-      dni: porId.get(u.id)?.dni ?? "",
-      rol: porId.get(u.id)?.rol ?? "lectura",
-      activo: !(u as { banned_until?: string }).banned_until || new Date((u as { banned_until?: string }).banned_until!) < new Date(),
-      ultimo: u.last_sign_in_at ? fmtFecha(u.last_sign_in_at) : "Nunca",
-    })).sort((a, b) => a.nombre.localeCompare(b.nombre));
-  } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
-  }
+  const supabase = await createClient();
+  const { data, error: e } = await supabase.rpc("admin_listar_usuarios");
+  const error = e?.message ?? null;
+  const filas = ((data ?? []) as { id: string; usuario: string; nombre: string | null; dni: string | null; puesto: string | null; rol: string; activo: boolean; ultimo_ingreso: string | null }[])
+    .map((u) => ({ id: u.id, usuario: u.usuario, nombre: u.nombre ?? "", dni: u.dni ?? "", puesto: u.puesto ?? "", rol: u.rol, activo: u.activo, ultimo: u.ultimo_ingreso ? fmtFecha(u.ultimo_ingreso) : "Nunca" }));
 
   return (
     <div className="flex flex-col gap-5">
