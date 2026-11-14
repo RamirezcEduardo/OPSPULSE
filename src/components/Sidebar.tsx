@@ -34,9 +34,11 @@ const OTROS = [
 
 export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string; esAdmin: boolean }) {
   const path = usePathname();
-  const [abierto, setAbierto] = useState(true);
-  const [abiertoOps, setAbiertoOps] = useState(true);
-  const [abiertoBus, setAbiertoBus] = useState(true);
+  // Grupos cerrados por defecto; solo se abre el que contiene la página actual.
+  const contiene = (lista: { href: string }[]) => lista.some((i) => path === i.href || path.startsWith(i.href + "/"));
+  const [abierto, setAbierto] = useState(() => contiene(INVENTARIO));
+  const [abiertoOps, setAbiertoOps] = useState(() => contiene(OPERACIONES));
+  const [abiertoBus, setAbiertoBus] = useState(() => contiene(BUSQUEDA));
   const [movil, setMovil] = useState(false);
   const activo = (h: string) => path === h || path.startsWith(h + "/");
   const enlace = (h: string, sub = false) =>
