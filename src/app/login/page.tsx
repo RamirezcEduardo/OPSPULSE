@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { usuarioAEmail } from "@/lib/usuario";
+import { BotonTema, Logo } from "@/components/Tema";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,10 +25,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen grid place-items-center bg-grafito px-4">
+    <main className="relative min-h-screen grid place-items-center bg-fondo px-4">
+      <BotonTema className="absolute right-4 top-4" />
       <form onSubmit={entrar} className="w-full max-w-sm rounded-2xl bg-tarjeta p-8 shadow-xl flex flex-col gap-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.svg" alt="OpsPulse · Supply Chain Control" className="h-14 w-auto self-start" />
+        <div className="self-start"><Logo /></div>
         <h1 className="text-xl font-bold mt-2">Iniciar sesión</h1>
         <label className="flex flex-col gap-1 text-sm">
           Usuario

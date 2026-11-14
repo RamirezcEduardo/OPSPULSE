@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useTema } from "@/components/Tema";
 import { ChevronDown, ChevronRight, LogOut, Menu, Moon, Settings, Sun, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -43,14 +44,7 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
       activo(h) ? "bg-marca text-white font-semibold" : "text-neutral-200 hover:bg-white/10"
     }`;
 
-  const [oscuro, setOscuro] = useState(false);
-  useEffect(() => setOscuro(document.documentElement.dataset.theme === "dark"), []);
-  function cambiarTema() {
-    const nuevo = !oscuro;
-    setOscuro(nuevo);
-    document.documentElement.dataset.theme = nuevo ? "dark" : "light";
-    try { localStorage.setItem("tema", nuevo ? "dark" : "light"); } catch {}
-  }
+  const { oscuro, cambiar: cambiarTema } = useTema();
 
   async function salir() {
     await createClient().auth.signOut();
