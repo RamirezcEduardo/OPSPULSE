@@ -20,9 +20,11 @@ export async function middleware(request: NextRequest) {
       },
     },
   );
-  let user = null;
+  // getClaims valida el token localmente (sin ir a Supabase en cada clic) y refresca la sesión si venció.
+  let user: unknown = null;
   try {
-    ({ data: { user } } = await supabase.auth.getUser());
+    const { data } = await supabase.auth.getClaims();
+    user = data?.claims?.sub ?? null;
   } catch {
     user = null;
   }
