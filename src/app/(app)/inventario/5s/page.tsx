@@ -28,7 +28,7 @@ function Barras({ titulo, datos, sufijo = "%" }: { titulo: string; datos: [strin
       <h2 className="mb-4 font-semibold">{titulo}</h2>
       {!datos.length ? <p className="text-sm text-suave">Sin datos.</p> : (
         <ul className="flex flex-col gap-2.5">{datos.map(([k, v]) => (
-          <li key={k} title={`${k}: ${v ?? "—"}${sufijo}`} className="grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-3 text-sm">
+          <li key={k} title={`${k}: ${v ?? "—"}${sufijo}`} className="grid grid-cols-[minmax(0,14rem)_1fr_auto] items-center gap-3 text-sm">
             <span className="truncate text-suave">{k}</span>
             <span className="relative h-3.5 rounded-r bg-fondo">
               <span className="absolute inset-y-0 left-0 rounded-r bg-texto/70" style={{ width: `${Math.min(100, v ?? 0)}%` }} />
@@ -96,7 +96,7 @@ export default async function CincoS({ searchParams }: { searchParams: Promise<{
         </section>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <Barras titulo="Cumplimiento promedio por S" datos={BLOQUES_5S.map((b, i) => [`${b.s}S ${b.nombre.split(" ")[0]}`, porS[i]])} />
+          <Barras titulo="Cumplimiento promedio por S" datos={BLOQUES_5S.map((b, i) => [`${b.s}S ${b.nombre}`, porS[i]])} />
           <Barras titulo="Cumplimiento por área (menor a mayor)" datos={porArea} />
           <Barras titulo="Evolución semanal" datos={porSemana} />
           <section className="rounded-xl bg-tarjeta p-5">
