@@ -232,7 +232,7 @@ export function Formulario5S({ hoy, areas, supervisores }: { hoy: string; areas:
         <p className={`font-bold ${colorNivel(calc.nivel)}`}>{calc.nivel}</p>
         <div className="mt-4 grid grid-cols-5 gap-2 text-center">
           {BLOQUES_5S.map((b, k) => (
-            <div key={b.s} className="rounded-xl bg-fondo p-2"><p className="text-xs font-semibold">{b.s}S</p><p className="truncate text-[10px] text-suave">{b.nombre.replace(/^.*\((.*)\)$/, "$1")}</p><p className="font-bold tabular-nums">{calc.porS[k] ?? "—"}</p></div>))}
+            <div key={b.s} className="rounded-xl bg-fondo p-2"><p className="text-xs font-semibold">{b.s}S</p><p className="truncate text-[10px] text-suave">{b.nombre.split("(")[1]?.replace(")", "") ?? ""}</p><p className="font-bold tabular-nums">{calc.porS[k] ?? "—"}</p></div>))}
         </div>
       </section>
       {faltan.length > 0 && (

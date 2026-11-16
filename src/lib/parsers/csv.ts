@@ -23,7 +23,7 @@ export function parseCSV(texto: string): Record<string, string>[] {
   if (campo !== "" || fila.length) { fila.push(campo); if (fila.some((x) => x !== "")) filas.push(fila); }
   const [enc, ...resto] = filas;
   if (!enc) return [];
-  const h = enc.map((x) => x.trim());
+  const h = enc.map((x) => arreglarTexto(x.trim()));
   return resto.map((r) => Object.fromEntries(h.map((k, i) => [k, (r[i] ?? "").trim()])));
 }
 
@@ -37,3 +37,22 @@ export function fechaLima(v: string | undefined): string | null {
   return `${y}-${p(mo)}-${p(d)}T${p(h)}:${p(mi)}:${p(s)}-05:00`;
 }
 export const num = (v: string | undefined) => (v == null || v === "" ? null : Number(v.replace(/,/g, "")));
+
+/** Corrige mojibake típico (UTF-8 leído como Latin-1): "ubicaciÃ³n" → "ubicación". */
+export function arreglarTexto(t: string) {
+  if (!/[ÃÂ]/.test(t)) return t;
+  try { return decodeURIComponent(escape(t)); } catch { return t; }
+}
+
+/** Fecha día/mes/año con hora opcional, o serial de Excel → ISO con -05:00 */
+export function fechaFlexible(v: string | undefined): string | null {
+  if (!v) return null;
+  const n = Number(v);
+  if (!Number.isNaN(n) && n > 30000 && n < 80000) {
+    const ms = Math.round((n - 25569) * 86400000);
+    const d = new Date(ms);
+    const p = (x: number) => String(x).padStart(2, "0");
+    return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}T${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}-05:00`;
+  }
+  return fechaLima(v.trim());
+}

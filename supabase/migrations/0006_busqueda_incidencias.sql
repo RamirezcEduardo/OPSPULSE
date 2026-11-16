@@ -1,0 +1,3 @@
+-- Aplicado en OPSPULSE.PE el 16/11/2026 (shortpick_linea, shortpick_verificacion, v_shortpick,
+-- bulto, bulto_recuperacion, trigger bulto_recalcular, v_bulto, producto.costo_confirmado).
+-- Ver historial de la sesión; se replica aquí para entornos nuevos.
