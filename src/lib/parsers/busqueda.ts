@@ -24,12 +24,11 @@ export type FilaShortpick = ReturnType<typeof mapearShortpick>;
 
 export const COLS_BULTO = ["Nro LPN"];
 
-/** Proceso del archivo → sección. Perdido* → perdidos; Sin Ubicación / Por Ubicar → sin_ubicacion. */
+/** Proceso del archivo DATA → sección: "Sin Ubicación" → sin_ubicacion; cualquier otro proceso → perdidos. */
 export function clasificar(proceso: string, porDefecto: "perdidos" | "sin_ubicacion") {
-  const t = proceso.toUpperCase();
-  if (/PERDID/.test(t)) return "perdidos" as const;
-  if (/SIN.?UBIC|POR UBICAR/.test(t)) return "sin_ubicacion" as const;
-  return porDefecto;
+  const t = proceso.trim().toUpperCase();
+  if (!t) return porDefecto;
+  return /^SIN.?UBICACI[OÓ]N/.test(t) ? ("sin_ubicacion" as const) : ("perdidos" as const);
 }
 
 export function mapearBulto(r: Record<string, string>, porDefecto: "perdidos" | "sin_ubicacion") {

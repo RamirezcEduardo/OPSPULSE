@@ -14,7 +14,9 @@ describe("búsqueda de incidencias", () => {
     expect(mapearShortpick({ "Cod Alternat": "834501", Ubicacion: "EB-1", "Un Ajust": "-1", "Fe y Hr Crea": "31/01/2026 21:08" })).toMatchObject({ _sci: false, un_ajust: -1 });
   });
   it("bulto: clasifica por categoría y limpia el valor", () => {
-    const b = mapearBulto({ "Nro LPN": "CJ1", Categoría: "SIN UBICACION", "Cod Alternat": "1", "Valor S/": "S/ 1,234.50" }, "perdidos");
+    const b = mapearBulto({ "Nro LPN": "CJ1", Proceso: "Sin Ubicación", "Cod Alternat": "1", "Val tot": "1234.5" }, "perdidos");
     expect(b).toMatchObject({ clasificacion: "sin_ubicacion", val_tot: 1234.5 });
+    expect(mapearBulto({ "Nro LPN": "CJ2", Proceso: "Por Ubicar" }, "sin_ubicacion").clasificacion).toBe("perdidos");
+    expect(mapearBulto({ "Nro LPN": "CJ3", Proceso: "Perdido ERU" }, "sin_ubicacion").clasificacion).toBe("perdidos");
   });
 });
