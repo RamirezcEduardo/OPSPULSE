@@ -17,7 +17,15 @@ export async function cargarBultos(_clas: Clas, archivo: string, filas: FilaBult
   // Los pendientes de esas secciones que no vengan en este archivo quedan "YA NO FIGURA"
   for (const cl of clases) await supabase.from("bulto").update({ visto_ultima_carga: false }).eq("clasificacion", cl).in("estado", ["pendiente", "parcial"]);
   for (let i = 0; i < validas.length; i += 500) {
-    const lote = validas.slice(i, i + 500).map((f) => ({ ...f, carga_id: c.id, visto_ultima_carga: true }));
+    const trozo = validas.slice(i, i + 500);
+    // Conserva lo que ya había (supervisor, responsable, área, valor…) si el archivo nuevo lo trae vacío
+    const { data: prev } = await supabase.from("bulto").select("*").in("nro_lpn", trozo.map((f) => f.nro_lpn));
+    const previo = new Map((prev ?? []).map((b) => [`${b.nro_lpn}|${b.cod_alternat}`, b]));
+    const lote = trozo.map((f) => {
+      const p = previo.get(`${f.nro_lpn}|${f.cod_alternat}`) ?? {};
+      const fusion = Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v ?? (p as Record<string, unknown>)[k] ?? null]));
+      return { ...fusion, carga_id: c.id, visto_ultima_carga: true };
+    });
     const { error } = await supabase.from("bulto").upsert(lote, { onConflict: "nro_lpn,cod_alternat" });
     if (error) return { ok: false, mensaje: error.message };
   }
