@@ -9,7 +9,16 @@ const ruta = (c: Clas) => (c === "perdidos" ? "/busqueda/perdidos" : "/busqueda/
 
 export async function cargarBultos(_clas: Clas, archivo: string, filas: FilaBulto[]) {
   const supabase = await createClient();
-  const validas = [...new Map(filas.filter((f) => f.nro_lpn).map((f) => [`${f.nro_lpn}|${f.cod_alternat}`, f])).values()];
+  // Un mismo LPN+SKU no se duplica: si aparece como Sin Ubicación y como Por Ubicar/Perdido, gana Sin ubicación
+  const unicos = new Map<string, FilaBulto>();
+  let repetidos = 0;
+  for (const f of filas.filter((x) => x.nro_lpn)) {
+    const k = `${f.nro_lpn}|${f.cod_alternat}`;
+    const ya = unicos.get(k);
+    if (ya) { repetidos++; if (ya.clasificacion === "sin_ubicacion") continue; }
+    unicos.set(k, f);
+  }
+  const validas = [...unicos.values()];
   if (!validas.length) return { ok: false, mensaje: "El archivo no tiene bultos (falta Nro LPN)." };
   const clases = [...new Set(validas.map((v) => v.clasificacion))] as Clas[];
   const { data: c, error: e1 } = await supabase.from("carga").insert({ fuente: "PERDIDOS", archivo, filas: filas.length, insertadas: validas.length }).select("id").single();
@@ -24,6 +33,8 @@ export async function cargarBultos(_clas: Clas, archivo: string, filas: FilaBult
     const lote = trozo.map((f) => {
       const p = previo.get(`${f.nro_lpn}|${f.cod_alternat}`) ?? {};
       const fusion = Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v ?? (p as Record<string, unknown>)[k] ?? null]));
+      // Si ya estaba en Sin ubicación, no lo pasa a Perdidos por venir como "Por Ubicar"
+      if ((p as { clasificacion?: string }).clasificacion === "sin_ubicacion") { fusion.clasificacion = "sin_ubicacion"; fusion.proceso = (p as { proceso?: string }).proceso ?? fusion.proceso; }
       return { ...fusion, carga_id: c.id, visto_ultima_carga: true };
     });
     const { error } = await supabase.from("bulto").upsert(lote, { onConflict: "nro_lpn,cod_alternat" });
@@ -32,7 +43,7 @@ export async function cargarBultos(_clas: Clas, archivo: string, filas: FilaBult
   const { count } = await supabase.from("bulto").select("id", { count: "exact", head: true }).eq("visto_ultima_carga", false).in("estado", ["pendiente", "parcial"]);
   clases.forEach((cl) => revalidatePath(ruta(cl)));
   const n = (cl: Clas) => validas.filter((v) => v.clasificacion === cl).length;
-  return { ok: true, mensaje: `${n("perdidos")} a Perdidos · ${n("sin_ubicacion")} a Sin ubicación · ${count ?? 0} pendientes ya no figuran.` };
+  return { ok: true, mensaje: `${n("perdidos")} a Perdidos · ${n("sin_ubicacion")} a Sin ubicación${repetidos ? ` · ${repetidos} LPN repetidos unificados` : ""} · ${count ?? 0} pendientes ya no figuran.` };
 }
 
 export async function registrarRecuperacion(clas: Clas, r: { bulto_id: number; unidades: number; valor: number; ubicacion_encontrado: string | null; dni_recupero: string | null; fotos: string[]; comentario: string | null }) {

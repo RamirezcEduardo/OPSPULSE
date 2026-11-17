@@ -25,7 +25,7 @@ export function CargarBultos({ clas }: { clas: "perdidos" | "sin_ubicacion" }) {
       </div>
       {prev && (
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-borde p-3 text-sm">
-          <span className="font-medium">{prev.archivo}</span><span>{prev.filas.length} bultos</span><span className="rounded-full bg-fondo px-2 py-0.5">Perdidos: {prev.filas.filter((f) => f.clasificacion === "perdidos").length}</span><span className="rounded-full bg-fondo px-2 py-0.5">Sin ubicación: {prev.filas.filter((f) => f.clasificacion === "sin_ubicacion").length}</span>
+          <span className="font-medium">{prev.archivo}</span><span>{new Set(prev.filas.map((f) => `${f.nro_lpn}|${f.cod_alternat}`)).size} bultos únicos</span><span className="rounded-full bg-fondo px-2 py-0.5">Perdidos: {prev.filas.filter((f) => f.clasificacion === "perdidos").length}</span><span className="rounded-full bg-fondo px-2 py-0.5">Sin ubicación: {prev.filas.filter((f) => f.clasificacion === "sin_ubicacion").length}</span>
           <div className="ml-auto flex gap-2">
             <button onClick={() => setPrev(null)} className="h-10 rounded-lg border border-borde px-3">Cancelar</button>
             <button disabled={pend || !prev.filas.length} onClick={() => start(async () => { const r = await cargarBultos(clas, prev.archivo, prev.filas); setMsg({ ok: r.ok, t: r.mensaje }); if (r.ok) setPrev(null); })}
