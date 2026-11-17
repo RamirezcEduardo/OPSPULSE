@@ -31,20 +31,28 @@ export function clasificar(proceso: string, porDefecto: "perdidos" | "sin_ubicac
   return /^SIN.?UBICACI[OÓ]N/.test(t) ? ("sin_ubicacion" as const) : ("perdidos" as const);
 }
 
+/** "SEM 46" + año → "2026-S46" (mismo formato que el resto de la app). */
+export function semanaDe(sem: string, anio: string, fechaIso: string | null) {
+  const n = sem.match(/(\d{1,2})/)?.[1];
+  const y = anio.match(/\d{4}/)?.[0] ?? fechaIso?.slice(0, 4);
+  return n && y ? `${y}-S${n.padStart(2, "0")}` : null;
+}
+
 export function mapearBulto(r: Record<string, string>, porDefecto: "perdidos" | "sin_ubicacion") {
   const proceso = pick(r, "Proceso", "Categoría", "Categoria");
+  const ubic = pick(r, "Ubicacion", "Ubicación de donde salió", "Ubicación");
   const valor = pick(r, "Val tot", "Valor S/", "Valor").replace(/[S/\s,]/g, "");
   return {
-    clasificacion: clasificar(proceso, porDefecto),
-    proceso: proceso || null,
+    clasificacion: proceso ? clasificar(proceso, porDefecto) : /^SIN-?UBIC/i.test(ubic) ? ("sin_ubicacion" as const) : porDefecto,
+    proceso: proceso || (/^SIN-?UBIC/i.test(ubic) ? "Sin Ubicación (WMS)" : null),
     nro_lpn: pick(r, "Nro LPN", "lpn"),
     cod_alternat: pick(r, "Cod Alternat"),
     descripcion: arreglarTexto(pick(r, "Descripcion", "Descripción")) || null,
     cantidad_actual: num(pick(r, "Cantidad actual", "Cantidad perdida", "Unidades")),
     val_tot: valor && !Number.isNaN(Number(valor)) ? Number(valor) : null,
     fecha_creacion: fechaFlexible(pick(r, "Fe y Hr Crea", "Fecha creación LPN", "Fecha")),
-    ubicacion: pick(r, "Ubicacion", "Ubicación de donde salió", "Ubicación") || null,
-    ubicacion_anterior: pick(r, "Ubicación Anterior", "Ubicacion Anterior") || null,
+    ubicacion: ubic || null,
+    ubicacion_anterior: pick(r, "Ubicación Anterior", "Ubicación anterior", "Ubicacion Anterior") || null,
     area: pick(r, "Área", "Area") || null,
     supervisor: pick(r, "Supervisor", "Supervisor a cargo") || null,
     responsable: pick(r, "Responsable") || null,
@@ -56,6 +64,7 @@ export function mapearBulto(r: Record<string, string>, porDefecto: "perdidos" | 
     nro_oc: pick(r, "Nro OC") || null,
     lote: pick(r, "Nro de lote") || null,
     nro_grupo: pick(r, "Nro Grupo") || null,
+    semana: semanaDe(pick(r, "Sem", "Semana"), pick(r, "Año", "Anio"), fechaFlexible(pick(r, "Fe y Hr Crea", "Fecha"))),
   };
 }
 export type FilaBulto = ReturnType<typeof mapearBulto>;

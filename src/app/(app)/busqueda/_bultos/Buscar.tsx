@@ -29,7 +29,7 @@ export function BuscarBultos({ clas, bultos }: { clas: "perdidos" | "sin_ubicaci
 
   function guardar() {
     const u = Number(und);
-    const valorUnit = sel!.cantidad_actual ? Number(sel!.val_tot ?? 0) / Number(sel!.cantidad_actual) : 0;
+    const valorUnit = sel!.cantidad_actual ? Number(sel!.valor_total ?? 0) / Number(sel!.cantidad_actual) : 0;
     start(async () => {
       const r = await registrarRecuperacion(clas, { bulto_id: sel!.id, unidades: u, valor: Math.round(u * valorUnit * 100) / 100, area_encontrado: area || null, ubicacion_encontrado: ubic.toUpperCase() || null, dni_recupero: dni || null, fotos, comentario: coment || null });
       setMsg(r.mensaje);

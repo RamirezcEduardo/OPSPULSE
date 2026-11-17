@@ -2,11 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { fmtNum, fmtSoles } from "@/lib/formato";
 import { Barras, Kpis, agrupar } from "@/components/Graficos";
 import { CargarShortpick } from "./Cargar";
+import { FiltroSemana } from "@/components/FiltroSemana";
 
 export const dynamic = "force-dynamic";
 type S = { id: number; dia: string; semana: string; area: string; cod_alternat: string; descripcion: string | null; ubicacion: string; faltante: number; valor: number; sin_costo: boolean; situacion: string; pendiente: number; valor_pendiente: number; cantidad_encontrada: number | null };
 
-export default async function ShortpickPage({ searchParams }: { searchParams: Promise<{ desde?: string; hasta?: string }> }) {
+export default async function ShortpickPage({ searchParams }: { searchParams: Promise<{ desde?: string; hasta?: string; semana?: string }> }) {
   const sp = await searchParams;
   const supabase = await createClient();
   const { data: cl } = await supabase.auth.getClaims();
@@ -14,8 +15,11 @@ export default async function ShortpickPage({ searchParams }: { searchParams: Pr
   const hoy = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
   const desde = sp.desde ?? hoy.slice(0, 8) + "01";
   const hasta = sp.hasta ?? hoy;
-  const { data, error } = await supabase.from("v_shortpick").select("id,dia,semana,area,cod_alternat,descripcion,ubicacion,faltante,valor,sin_costo,situacion,pendiente,valor_pendiente,cantidad_encontrada")
-    .gte("dia", desde).lte("dia", hasta).limit(50000);
+  const { data: ss } = await supabase.from("v_shortpick").select("semana").order("semana", { ascending: false }).limit(50000);
+  const semanas = [...new Set((ss ?? []).map((x) => x.semana as string))];
+  let q = supabase.from("v_shortpick").select("id,dia,semana,area,cod_alternat,descripcion,ubicacion,faltante,valor,sin_costo,situacion,pendiente,valor_pendiente,cantidad_encontrada").limit(50000);
+  q = sp.semana ? q.eq("semana", sp.semana) : q.gte("dia", desde).lte("dia", hasta);
+  const { data, error } = await q;
   const r = (data ?? []) as S[];
   const und = r.reduce((s, x) => s + Number(x.faltante), 0);
   const val = r.reduce((s, x) => s + Number(x.valor), 0);
@@ -32,6 +36,7 @@ export default async function ShortpickPage({ searchParams }: { searchParams: Pr
           <label className="flex flex-col gap-1 text-xs text-suave">Hasta<input type="date" name="hasta" defaultValue={hasta} className={inp} /></label>
           <button className="h-10 rounded-lg border border-borde bg-tarjeta px-3 text-sm">Filtrar</button>
         </form>
+        <FiltroSemana semanas={semanas} actual={sp.semana} />
       </header>
       {perfil?.rol === "admin" && <CargarShortpick />}
       {error && <p className="rounded-xl bg-tarjeta p-4 text-sm text-marca-oscuro">{error.message}</p>}

@@ -24,7 +24,8 @@ export function parseCSV(texto: string): Record<string, string>[] {
   const [enc, ...resto] = filas;
   if (!enc) return [];
   const h = enc.map((x) => arreglarTexto(x.trim()));
-  return resto.map((r) => Object.fromEntries(h.map((k, i) => [k, (r[i] ?? "").trim()])));
+  const limpio = (v: string) => { const t = v.trim(); const m = t.match(/^="?(.*?)"?$/); return t.startsWith("=") && m ? m[1] : t; };
+  return resto.map((r) => Object.fromEntries(h.map((k, i) => [k, limpio(r[i] ?? "")])));
 }
 
 /** "13/11/2026 12:26" o "13/11/2026" (hora de Lima) → ISO con -05:00 */
