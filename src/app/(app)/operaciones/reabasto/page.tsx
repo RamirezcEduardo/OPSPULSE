@@ -20,7 +20,10 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
   const desde = sp.desde ?? ultima ?? new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
   const hasta = sp.hasta ?? desde;
   const { data, error } = await supabase.from("auditoria_activo").select("*").gte("fecha", desde).lte("fecha", hasta).limit(20000);
-  const r = (data ?? []) as A[];
+  const { data: uo } = await supabase.from("usuario_operativo").select("usuario,nombre").limit(10000);
+  const nombres = new Map((uo ?? []).map((u) => [String(u.usuario).toLowerCase(), u.nombre as string]));
+  const nom = (u: string | null) => (u ? nombres.get(u.toLowerCase()) ?? u : null);
+  const r = ((data ?? []) as A[]).map((x) => ({ ...x, usuario_reabasto: nom(x.usuario_reabasto) }));
   const val = r.filter((x) => x.validado_en);
   const conf = val.filter((x) => Number(x.diferencia) === 0);
   const dif = val.filter((x) => Number(x.diferencia) !== 0);
