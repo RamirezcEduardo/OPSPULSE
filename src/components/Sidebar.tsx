@@ -32,7 +32,7 @@ const OTROS = [
   { href: "/cargas", label: "Cargas" },
 ];
 
-export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string; esAdmin: boolean }) {
+export function Sidebar({ nombre, rol, esAdmin, ocultos = [] }: { nombre: string; rol: string; esAdmin: boolean; ocultos?: string[] }) {
   const path = usePathname();
   // Grupos cerrados por defecto; solo se abre el que contiene la página actual.
   const contiene = (lista: { href: string }[]) => lista.some((i) => path === i.href || path.startsWith(i.href + "/"));
@@ -71,7 +71,7 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
         </button>
         {abierto && (
           <div className="ml-3 flex flex-col gap-0.5 border-l border-white/20 pl-3">
-            {INVENTARIO.map((i) => (
+            {INVENTARIO.filter((i) => !ocultos.includes(i.href)).map((i) => (
               <Link key={i.href} href={i.href} className={enlace(i.href, true)} onClick={() => setMovil(false)}>{i.label}</Link>
             ))}
           </div>
@@ -82,7 +82,7 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
         </button>
         {abiertoOps && (
           <div className="ml-3 flex flex-col gap-0.5 border-l border-white/20 pl-3">
-            {OPERACIONES.map((i) => (
+            {OPERACIONES.filter((i) => !ocultos.includes(i.href)).map((i) => (
               <Link key={i.href} href={i.href} className={enlace(i.href, true)} onClick={() => setMovil(false)}>{i.label}</Link>
             ))}
           </div>
@@ -93,13 +93,13 @@ export function Sidebar({ nombre, rol, esAdmin }: { nombre: string; rol: string;
         </button>
         {abiertoBus && (
           <div className="ml-3 flex flex-col gap-0.5 border-l border-white/20 pl-3">
-            {BUSQUEDA.map((i) => (
+            {BUSQUEDA.filter((i) => !ocultos.includes(i.href)).map((i) => (
               <Link key={i.href} href={i.href} className={enlace(i.href, true)} onClick={() => setMovil(false)}>{i.label}</Link>
             ))}
           </div>
         )}
         <div className="mt-2 flex flex-col gap-0.5">
-          {OTROS.map((i) => (
+          {OTROS.filter((i) => !ocultos.includes(i.href)).map((i) => (
             <Link key={i.href} href={i.href} className={enlace(i.href)} onClick={() => setMovil(false)}>{i.label}</Link>
           ))}
         </div>

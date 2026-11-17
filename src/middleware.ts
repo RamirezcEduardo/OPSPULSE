@@ -5,7 +5,9 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 export async function middleware(request: NextRequest) {
   const url = SUPABASE_URL;
   const key = SUPABASE_ANON_KEY;
-  let response = NextResponse.next({ request });
+  const h = new Headers(request.headers);
+  h.set("x-pathname", request.nextUrl.pathname);
+  let response = NextResponse.next({ request: { headers: h } });
   const supabase = createServerClient(
     url,
     key,
@@ -14,7 +16,8 @@ export async function middleware(request: NextRequest) {
         getAll: () => request.cookies.getAll(),
         setAll: (list) => {
           list.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
+          h.set("cookie", request.cookies.toString());
+          response = NextResponse.next({ request: { headers: h } });
           list.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
         },
       },

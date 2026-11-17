@@ -3,13 +3,13 @@ import { exigirAdmin } from "@/lib/auth";
 
 const SECCIONES: { t: string; d: string; href?: string }[] = [
   { t: "Usuarios", href: "/configuracion/usuarios", d: "Crear usuarios, asignar rol (admin, auditor, supervisor, lectura), desactivar acceso y restablecer contraseña." },
-  { t: "Permisos por vista", d: "Elegir qué módulos ve cada rol o cada usuario, y si puede solo ver, registrar o editar." },
+  { t: "Permisos por vista", href: "/configuracion/permisos", d: "Elegir qué módulos ve cada rol o cada usuario, y si puede solo ver, registrar o editar." },
   { t: "Áreas y supervisores", d: "Limitar a cada supervisor a sus áreas (Knapp, Mezzanine…) y asignar responsables." },
   { t: "Maestros", d: "Áreas, ubicaciones virtuales, motivos, pantallas del cód. 29, auditores y lista de no considerar." },
   { t: "Parámetros", d: "Muestra de reabasto, turnos, ventana de cruces, niveles 5S, tramos de demora y cierres trimestrales." },
   { t: "Metas", d: "Metas de ERU, auditorías y KPIs operativos por área y proceso." },
   { t: "Sitios", d: "Agregar CD06 y plantas para el crecimiento multi-sitio." },
-  { t: "Bitácora", d: "Quién cargó, editó, confirmó cruces o pasó a NO CONSIDERAR, y cuándo." },
+  { t: "Bitácora", href: "/configuracion/bitacora", d: "Quién cargó, editó, confirmó cruces o pasó a NO CONSIDERAR, y cuándo." },
 ];
 
 export default async function Configuracion() {
