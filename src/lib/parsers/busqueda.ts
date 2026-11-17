@@ -23,24 +23,39 @@ export function mapearShortpick(r: Record<string, string>) {
 export type FilaShortpick = ReturnType<typeof mapearShortpick>;
 
 export const COLS_BULTO = ["Nro LPN"];
-export function mapearBulto(r: Record<string, string>, clasificacion: "perdidos" | "sin_ubicacion") {
-  const cat = pick(r, "Categoría", "Categoria", "Proceso").toUpperCase();
-  const clas = /SIN.?UBIC/.test(cat) ? "sin_ubicacion" : /PERDID/.test(cat) ? "perdidos" : clasificacion;
-  const valor = pick(r, "Valor S/", "Val tot", "Valor").replace(/[S/\s,]/g, "");
+
+/** Proceso del archivo → sección. Perdido* → perdidos; Sin Ubicación / Por Ubicar → sin_ubicacion. */
+export function clasificar(proceso: string, porDefecto: "perdidos" | "sin_ubicacion") {
+  const t = proceso.toUpperCase();
+  if (/PERDID/.test(t)) return "perdidos" as const;
+  if (/SIN.?UBIC|POR UBICAR/.test(t)) return "sin_ubicacion" as const;
+  return porDefecto;
+}
+
+export function mapearBulto(r: Record<string, string>, porDefecto: "perdidos" | "sin_ubicacion") {
+  const proceso = pick(r, "Proceso", "Categoría", "Categoria");
+  const valor = pick(r, "Val tot", "Valor S/", "Valor").replace(/[S/\s,]/g, "");
   return {
-    clasificacion: clas,
-    proceso: pick(r, "Proceso") || null,
+    clasificacion: clasificar(proceso, porDefecto),
+    proceso: proceso || null,
     nro_lpn: pick(r, "Nro LPN", "lpn"),
     cod_alternat: pick(r, "Cod Alternat"),
-    descripcion: arreglarTexto(pick(r, "Descripción", "Descripcion", "Producto")) || null,
-    cantidad_actual: num(pick(r, "Cantidad perdida", "Unidades", "Cantidad actual")),
-    val_tot: valor ? Number(valor) : null,
-    fecha_creacion: fechaFlexible(pick(r, "Fecha creación LPN", "Fe y Hr Crea")),
-    ubicacion: pick(r, "Ubicación de donde salió", "Ubicacion", "Ubicación") || null,
+    descripcion: arreglarTexto(pick(r, "Descripcion", "Descripción")) || null,
+    cantidad_actual: num(pick(r, "Cantidad actual", "Cantidad perdida", "Unidades")),
+    val_tot: valor && !Number.isNaN(Number(valor)) ? Number(valor) : null,
+    fecha_creacion: fechaFlexible(pick(r, "Fe y Hr Crea", "Fecha creación LPN", "Fecha")),
+    ubicacion: pick(r, "Ubicacion", "Ubicación de donde salió", "Ubicación") || null,
+    ubicacion_anterior: pick(r, "Ubicación Anterior", "Ubicacion Anterior") || null,
     area: pick(r, "Área", "Area") || null,
-    supervisor: pick(r, "Supervisor a cargo", "Supervisor") || null,
+    supervisor: pick(r, "Supervisor", "Supervisor a cargo") || null,
+    responsable: pick(r, "Responsable") || null,
+    familia: pick(r, "Familia", "CATEGORIA") || null,
+    estado_wms: pick(r, "Estado") || null,
+    usuario_causo: pick(r, "Usuario Modificac", "Nombre usuario que lo causó") || null,
+    usuario_recepcion: pick(r, "Usuario de recepción", "Usuario de recepcion") || null,
     dni_causo: pick(r, "DNI usuario que lo CAUSÓ", "DNI causó") || null,
-    usuario_causo: pick(r, "Nombre usuario que lo causó", "Usuario Modificac") || null,
+    nro_oc: pick(r, "Nro OC") || null,
+    lote: pick(r, "Nro de lote") || null,
     nro_grupo: pick(r, "Nro Grupo") || null,
   };
 }

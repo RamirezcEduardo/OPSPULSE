@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Upload } from "lucide-react";
-import { parseCSV } from "@/lib/parsers/csv";
+import { ACEPTA, leerArchivo } from "@/lib/parsers/archivo";
 import { mapearBulto, type FilaBulto } from "@/lib/parsers/busqueda";
 import { cargarBultos } from "./actions";
 
@@ -12,7 +12,7 @@ export function CargarBultos({ clas }: { clas: "perdidos" | "sin_ubicacion" }) {
   const [pend, start] = useTransition();
   async function leer(f: File) {
     setMsg(null);
-    const filas = parseCSV(await f.text());
+    const filas = await leerArchivo(f);
     if (!filas.length || !("Nro LPN" in filas[0] || "lpn" in filas[0])) return setMsg({ ok: false, t: "Falta la columna Nro LPN." });
     setPrev({ archivo: f.name, filas: filas.map((r) => mapearBulto(r, clas)) });
   }
@@ -20,9 +20,9 @@ export function CargarBultos({ clas }: { clas: "perdidos" | "sin_ubicacion" }) {
   return (
     <section className="rounded-xl bg-tarjeta p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h2 className="font-semibold">Cargar {clas === "perdidos" ? "perdidos" : "sin ubicación"}</h2><p className="text-sm text-suave">CSV de «Gestión Perdidos y Sin Ubicación» o export del WMS</p></div>
+        <div><h2 className="font-semibold">Cargar {clas === "perdidos" ? "perdidos" : "sin ubicación"}</h2><p className="text-sm text-suave">Excel o CSV · Proceso: Perdido ERU / Sin Ubicación / Por Ubicar</p></div>
         <label className="flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-marca px-4 text-sm font-semibold text-white"><Upload size={16} /> Elegir archivo
-          <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => e.target.files?.[0] && leer(e.target.files[0])} /></label>
+          <input type="file" accept={ACEPTA} className="sr-only" onChange={(e) => e.target.files?.[0] && leer(e.target.files[0])} /></label>
       </div>
       {prev && (
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-borde p-3 text-sm">

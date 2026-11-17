@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Upload } from "lucide-react";
-import { parseCSV } from "@/lib/parsers/csv";
+import { ACEPTA, leerArchivo } from "@/lib/parsers/archivo";
 import { faltanColumnasReabasto, mapearReabasto, type FilaReabasto } from "@/lib/parsers/reabasto";
 import { cargarReabasto } from "./actions";
 
@@ -12,7 +12,7 @@ export function CargarReabasto() {
   const [pend, start] = useTransition();
   async function leer(f: File) {
     setMsg(null);
-    const filas = parseCSV(await f.text());
+    const filas = await leerArchivo(f);
     if (!filas.length) return setMsg({ ok: false, t: "El archivo está vacío." });
     const falta = faltanColumnasReabasto(Object.keys(filas[0]));
     if (falta.length) return setMsg({ ok: false, t: `No es el export de Asignación. Faltan: ${falta.join(", ")}` });
@@ -28,7 +28,7 @@ export function CargarReabasto() {
         </div>
         <label className="flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-marca px-4 text-sm font-semibold text-white hover:bg-marca-oscuro">
           <Upload size={16} /> Elegir archivo
-          <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => e.target.files?.[0] && leer(e.target.files[0])} />
+          <input type="file" accept={ACEPTA} className="sr-only" onChange={(e) => e.target.files?.[0] && leer(e.target.files[0])} />
         </label>
       </div>
       {prev && (
