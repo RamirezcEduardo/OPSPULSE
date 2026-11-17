@@ -35,3 +35,12 @@ describe("reabasto", () => {
     expect(t.filter((x) => x.estado === "Pendiente").some((x) => m.has(x.clave))).toBe(false);
   });
 });
+
+import { mapearActivo } from "./reabasto";
+describe("formato INVENTARIO EN ACTIVOS", () => {
+  it("mapea columnas del Excel", () => {
+    expect(mapearActivo({ AUDITOR: "jhonatan", "FECH. AUDITADA": "17/11/2026 00:00:00", AREA: "KANAPP 1", REABASTECIDO: "folayar", "TURNO DE REBASTO": "AMANECIDA",
+      PRODUCTO: "7702354957551", DESCRIPCION: "NUTRIBELA", ALTERNO: "830847", ACTIVO: "EA-05-42-40-04", "CANT. WMS": "", "CANT. FISICO": "" }))
+      .toMatchObject({ fecha: "2026-11-17", auditor_asignado: "JHONATAN", usuario_reabasto: "folayar", cod_alternat: "830847", ubicacion: "EA-05-42-40-04", cant_sistema: null });
+  });
+});

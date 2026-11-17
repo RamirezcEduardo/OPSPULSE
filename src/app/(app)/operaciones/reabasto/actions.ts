@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { seleccionarMuestra, type FilaReabasto, type ParamMuestra } from "@/lib/parsers/reabasto";
+import { seleccionarMuestra, type FilaActivo, type FilaReabasto, type ParamMuestra } from "@/lib/parsers/reabasto";
 
 export async function cargarReabasto(archivo: string, filas: FilaReabasto[]) {
   const supabase = await createClient();
@@ -36,3 +36,24 @@ export async function cargarReabasto(archivo: string, filas: FilaReabasto[]) {
   return { ok: true, mensaje: `${validas.length} tareas cargadas · ${muestra.size} nuevas en la muestra de auditoría.` };
 }
 
+
+export async function cargarActivos(archivo: string, filas: FilaActivo[]) {
+  const supabase = await createClient();
+  const validas = [...new Map(filas.filter((f) => f.cod_alternat && f.ubicacion).map((f) => [`${f.fecha}|${f.cod_alternat}|${f.ubicacion}`, f])).values()];
+  if (!validas.length) return { ok: false, mensaje: "El archivo no tiene filas con ALTERNO y ACTIVO." };
+  const { data: c, error: e1 } = await supabase.from("carga").insert({ fuente: "AUDITORIA_ACTIVO", archivo, filas: filas.length, insertadas: validas.length }).select("id").single();
+  if (e1) return { ok: false, mensaje: e1.message.includes("row-level") ? "Solo un administrador puede cargar." : e1.message };
+  const { error } = await supabase.from("auditoria_activo").upsert(validas.map((v) => ({ ...v, carga_id: c.id })), { onConflict: "fecha,cod_alternat,ubicacion", ignoreDuplicates: true });
+  if (error) { await supabase.from("carga").delete().eq("id", c.id); return { ok: false, mensaje: error.message }; }
+  revalidatePath("/operaciones/reabasto");
+  const aud = [...new Set(validas.map((v) => v.auditor_asignado).filter(Boolean))];
+  return { ok: true, mensaje: `${validas.length} activos cargados para ${aud.length} auditores (${aud.join(", ")}).` };
+}
+
+export async function validarActivo(id: number, sistema: number, fisica: number, obs: string, fotos: string[]) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("validar_activo", { p_id: id, p_sistema: sistema, p_fisica: fisica, p_obs: obs, p_fotos: fotos });
+  if (error) return { ok: false, mensaje: error.message.replace(/^.*?: /, "") };
+  revalidatePath("/operaciones/reabasto");
+  return { ok: true, mensaje: fisica - sistema === 0 ? "Conforme ✓" : `Guardado · diferencia ${fisica - sistema > 0 ? "+" : ""}${fisica - sistema}` };
+}

@@ -1,4 +1,4 @@
-import { fechaLima, num } from "./csv";
+import { fechaFlexible, fechaLima, num } from "./csv";
 
 export const COLUMNAS_REABASTO = ["Nro Tarea", "Cod Alternat", "Ubic destino", "Estado de tarea", "Tipo Asignac", "Cantidad asignada", "Fe y Hr Crea"];
 export const faltanColumnasReabasto = (h: string[]) => COLUMNAS_REABASTO.filter((c) => !h.includes(c));
@@ -74,3 +74,25 @@ export function seleccionarMuestra(tareas: FilaReabasto[], p: ParamMuestra, azar
   }
   return elegidas;
 }
+
+// ---- Formato "INVENTARIO EN ACTIVOS" (auditoría de reabasto en ubicación activa) ----
+export const COLS_ACTIVO = ["ALTERNO", "ACTIVO"];
+export function mapearActivo(r: Record<string, string>) {
+  const f = fechaFlexible(r["FECH. AUDITADA"] || r["FECHA AUDITADA"] || r["FECHA"]);
+  const n = (v: string | undefined) => (v == null || v === "" ? null : Number(String(v).replace(/,/g, "")));
+  return {
+    fecha: f ? f.slice(0, 10) : new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }),
+    auditor_asignado: (r["AUDITOR"] || "").trim().toUpperCase() || null,
+    area: r["AREA"] || r["ÁREA"] || null,
+    usuario_reabasto: r["REABASTECIDO"] || null,
+    turno: r["TURNO DE REBASTO"] || r["TURNO DE REABASTO"] || r["TURNO"] || null,
+    producto: r["PRODUCTO"] || null,
+    descripcion: r["DESCRIPCION"] || r["DESCRIPCIÓN"] || null,
+    cod_alternat: (r["ALTERNO"] || r["Cod Alternat"] || "").trim(),
+    ubicacion: (r["ACTIVO"] || r["UBICACION"] || "").trim(),
+    cant_sistema: n(r["CANT. WMS"]),
+    cant_fisica: n(r["CANT. FISICO"] || r["CANT. FÍSICO"]),
+    observacion: r["OBSERVACION"] || r["OBSERVACIÓN"] || null,
+  };
+}
+export type FilaActivo = ReturnType<typeof mapearActivo>;
