@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { usuarioAEmail } from "@/lib/usuario";
 import { BotonTema, Logo } from "@/components/Tema";
+import { FondoLogin } from "@/components/FondoLogin";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,9 +26,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen grid place-items-center bg-fondo px-4">
-      <BotonTema className="absolute right-4 top-4" />
-      <form onSubmit={entrar} className="w-full max-w-sm rounded-2xl bg-tarjeta p-8 shadow-xl flex flex-col gap-4">
+    <main className="relative min-h-screen grid place-items-center px-4">
+      <FondoLogin />
+      <BotonTema className="absolute right-4 top-4 z-10" />
+      <form onSubmit={entrar} className="relative z-10 w-full max-w-sm rounded-2xl bg-tarjeta/95 p-8 shadow-2xl backdrop-blur flex flex-col gap-4">
         <div className="self-start"><Logo /></div>
         <h1 className="text-xl font-bold mt-2">Iniciar sesión</h1>
         <label className="flex flex-col gap-1 text-sm">

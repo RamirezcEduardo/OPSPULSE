@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { Search } from "lucide-react";
 import { Fotos } from "@/components/Fotos";
+import { CopiarLista } from "@/components/CopiarLista";
 import { fmtNum, fmtSoles } from "@/lib/formato";
 import { asignarResponsables, registrarRecuperacion } from "./actions";
 
@@ -85,6 +86,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
       <label className="flex h-12 items-center gap-2 rounded-xl border border-borde bg-tarjeta px-3">
         <Search size={18} className="text-suave" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar LPN, SKU, descripción o ubicación" className="h-full flex-1 bg-transparent outline-none" aria-label="Buscar" />
       </label>
+      <CopiarLista titulo="LPN para copiar" valores={filtrados.map((b) => b.nro_lpn)} />
       <p className="text-xs text-suave">{filtrados.length} bultos pendientes · más antiguos primero</p>
       {filtrados.slice(0, 200).map((b) => (
         <button key={b.id} onClick={() => abrir(b)} className="flex flex-col gap-1 rounded-xl bg-tarjeta p-4 text-left active:scale-[.99]">
