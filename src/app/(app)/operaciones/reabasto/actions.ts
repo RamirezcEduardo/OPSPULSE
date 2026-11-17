@@ -41,13 +41,18 @@ export async function cargarActivos(archivo: string, filas: FilaActivo[]) {
   const supabase = await createClient();
   const validas = [...new Map(filas.filter((f) => f.cod_alternat && f.ubicacion).map((f) => [`${f.fecha}|${f.cod_alternat}|${f.ubicacion}`, f])).values()];
   if (!validas.length) return { ok: false, mensaje: "El archivo no tiene filas con ALTERNO y ACTIVO." };
-  const { data: c, error: e1 } = await supabase.from("carga").insert({ fuente: "AUDITORIA_ACTIVO", archivo, filas: filas.length, insertadas: validas.length }).select("id").single();
-  if (e1) return { ok: false, mensaje: e1.message.includes("row-level") ? "Solo un administrador puede cargar." : e1.message };
-  const { error } = await supabase.from("auditoria_activo").upsert(validas.map((v) => ({ ...v, carga_id: c.id })), { onConflict: "fecha,cod_alternat,ubicacion", ignoreDuplicates: true });
-  if (error) { await supabase.from("carga").delete().eq("id", c.id); return { ok: false, mensaje: error.message }; }
+  const { data, error } = await supabase.rpc("activos_cargar", { p_archivo: archivo, p_filas: validas });
+  if (error) return { ok: false, mensaje: error.message.replace(/^.*?: /, "") };
   revalidatePath("/operaciones/reabasto");
-  const aud = [...new Set(validas.map((v) => v.auditor_asignado).filter(Boolean))];
-  return { ok: true, mensaje: `${validas.length} activos cargados para ${aud.length} auditores (${aud.join(", ")}).` };
+  return { ok: true, mensaje: `${data} activos cargados${validas.length - Number(data) ? ` · ${validas.length - Number(data)} ya existían` : ""}. Ahora asigna los auditores.` };
+}
+
+export async function asignarAuditor(ids: number[], auditorId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("activos_asignar", { p_ids: ids, p_auditor: auditorId });
+  if (error) return { ok: false, mensaje: error.message.replace(/^.*?: /, "") };
+  revalidatePath("/operaciones/reabasto");
+  return { ok: true, mensaje: `${data} activos asignados.` };
 }
 
 export async function validarActivo(id: number, sistema: number, fisica: number, obs: string, fotos: string[]) {

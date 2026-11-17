@@ -2,16 +2,19 @@ import { createClient } from "@/lib/supabase/server";
 import { fmtFecha, fmtNum } from "@/lib/formato";
 import { Barras, Kpis, agrupar } from "@/components/Graficos";
 import { CargarActivos } from "./CargarActivos";
+import { Asignar } from "./Asignar";
+import { obtenerPermisos } from "@/lib/permisos";
 
 export const dynamic = "force-dynamic";
-type A = { id: number; fecha: string; auditor_asignado: string | null; area: string | null; usuario_reabasto: string | null; turno: string | null;
+type A = { id: number; fecha: string; auditor_asignado: string | null; auditor_id: string | null; area: string | null; usuario_reabasto: string | null; turno: string | null;
   cod_alternat: string; descripcion: string | null; ubicacion: string; cant_sistema: number | null; cant_fisica: number | null; diferencia: number | null; observacion: string | null; validado_en: string | null };
 
 export default async function ReabastoPage({ searchParams }: { searchParams: Promise<{ desde?: string; hasta?: string }> }) {
   const sp = await searchParams;
   const supabase = await createClient();
-  const { data: cl } = await supabase.auth.getClaims();
-  const { data: perfil } = await supabase.from("perfil").select("rol").eq("id", cl?.claims?.sub ?? "").maybeSingle();
+  const { nivel } = await obtenerPermisos();
+  const puedeEditar = nivel("/operaciones/reabasto") === "editar";
+  const { data: auditores } = puedeEditar ? await supabase.rpc("listar_auditores") : { data: [] };
   const { data: ult } = await supabase.from("auditoria_activo").select("fecha").order("fecha", { ascending: false }).limit(1);
   const ultima = ult?.[0]?.fecha as string | undefined;
   const desde = sp.desde ?? ultima ?? new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
@@ -36,7 +39,8 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
           <button className="h-10 rounded-lg border border-borde bg-tarjeta px-3 text-sm">Ver</button>
         </form>
       </header>
-      {perfil?.rol === "admin" && <CargarActivos />}
+      {puedeEditar && <CargarActivos />}
+      {puedeEditar && r.length > 0 && <Asignar filas={r as never} auditores={(auditores ?? []) as never} />}
       {error && <p className="rounded-xl bg-tarjeta p-4 text-sm text-marca-oscuro">{error.message}</p>}
       {!r.length ? <p className="rounded-xl bg-tarjeta p-6 text-sm text-suave">Sin activos cargados para {fmtFecha(desde + "T12:00:00-05:00")}{hasta !== desde ? ` – ${fmtFecha(hasta + "T12:00:00-05:00")}` : ""}.</p> : (<>
         <Kpis items={[

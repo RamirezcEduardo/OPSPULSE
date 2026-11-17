@@ -8,11 +8,11 @@ import { validarActivo } from "../actions";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type A = Record<string, any>;
 
-export function ValidarActivos({ filas, miNombre }: { filas: A[]; miNombre: string }) {
-  const auditores = ["Todos", ...new Set(filas.map((f) => f.auditor_asignado).filter(Boolean))];
-  const [aud, setAud] = useState(auditores.includes(miNombre) ? miNombre : "Todos");
+export function ValidarActivos({ filas, verTodos }: { filas: A[]; verTodos: boolean }) {
+  const auditores = ["Todos", ...new Set(filas.map((f) => f.auditor_asignado || "Sin asignar"))];
+  const [aud, setAud] = useState("Todos");
   const [lista, setLista] = useState(filas);
-  const visibles = useMemo(() => lista.filter((f) => aud === "Todos" || f.auditor_asignado === aud), [lista, aud]);
+  const visibles = useMemo(() => lista.filter((f) => aud === "Todos" || (f.auditor_asignado || "Sin asignar") === aud), [lista, aud]);
   const primera = Math.max(0, visibles.findIndex((f) => !f.validado_en));
   const [i, setI] = useState(primera);
   const a = visibles[Math.min(i, Math.max(0, visibles.length - 1))];
@@ -38,7 +38,7 @@ export function ValidarActivos({ filas, miNombre }: { filas: A[]; miNombre: stri
       if (!r.ok) return;
       const nueva = lista.map((x) => x.id === a.id ? { ...x, cant_sistema: Number(sis), cant_fisica: Number(fis), diferencia: dif, observacion: obs, fotos, validado_en: new Date().toISOString() } : x);
       setLista(nueva);
-      const vis = nueva.filter((f) => aud === "Todos" || f.auditor_asignado === aud);
+      const vis = nueva.filter((f) => aud === "Todos" || (f.auditor_asignado || "Sin asignar") === aud);
       const sig = vis.findIndex((x, k) => k > i && !x.validado_en);
       if (sig >= 0) ir(sig, vis);
     });
@@ -50,9 +50,9 @@ export function ValidarActivos({ filas, miNombre }: { filas: A[]; miNombre: stri
       <div className="rounded-xl bg-tarjeta p-4">
         <div className="flex justify-between text-sm"><span className="font-semibold">Validados</span><span className="tabular-nums">{hechas} / {visibles.length}</span></div>
         <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-fondo"><div className="h-full rounded-full bg-marca" style={{ width: `${(hechas / Math.max(1, visibles.length)) * 100}%` }} /></div>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">{auditores.map((x) => (
+        {verTodos && <div className="mt-3 flex gap-2 overflow-x-auto pb-1">{auditores.map((x) => (
           <button key={x} onClick={() => { setAud(x); setI(0); setMsg(null); }} aria-pressed={aud === x}
-            className={`h-9 shrink-0 rounded-full border px-4 text-sm ${aud === x ? "border-marca bg-marca text-white" : "border-borde"}`}>{x}</button>))}</div>
+            className={`h-9 shrink-0 rounded-full border px-4 text-sm ${aud === x ? "border-marca bg-marca text-white" : "border-borde"}`}>{x}</button>))}</div>}
       </div>
 
       <article className="flex flex-col gap-4 rounded-xl bg-tarjeta p-5">

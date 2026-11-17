@@ -1,19 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
 import { fmtFecha } from "@/lib/formato";
 import { ValidarActivos } from "./ValidarActivos";
+import { obtenerPermisos } from "@/lib/permisos";
 
 export const dynamic = "force-dynamic";
 
 export default async function Validar({ searchParams }: { searchParams: Promise<{ fecha?: string }> }) {
   const { fecha: fp } = await searchParams;
   const supabase = await createClient();
-  const { data: cl } = await supabase.auth.getClaims();
-  const { data: perfil } = await supabase.from("perfil").select("nombre").eq("id", cl?.claims?.sub ?? "").maybeSingle();
+  const { uid, nivel } = await obtenerPermisos();
+  const supervisa = nivel("/operaciones/reabasto") === "editar";
   const { data: fs } = await supabase.from("auditoria_activo").select("fecha").order("fecha", { ascending: false }).limit(5000);
   const fechas = [...new Set((fs ?? []).map((x) => x.fecha as string))];
   const fecha = fp && fechas.includes(fp) ? fp : fechas[0];
-  const { data } = fecha ? await supabase.from("auditoria_activo").select("*").eq("fecha", fecha).order("ubicacion") : { data: [] };
-  const miNombre = (perfil?.nombre ?? "").split(" ")[0].toUpperCase();
+  // El auditor ve solo lo que le asignaron; quien asigna (editar) ve todo
+  let q = supabase.from("auditoria_activo").select("*").eq("fecha", fecha ?? "").order("ubicacion");
+  if (!supervisa) q = q.eq("auditor_id", uid ?? "");
+  const { data } = fecha ? await q : { data: [] };
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
@@ -27,8 +30,8 @@ export default async function Validar({ searchParams }: { searchParams: Promise<
             <button className="h-10 rounded-lg border border-borde bg-tarjeta px-3 text-sm">Ver</button>
           </form>)}
       </div>
-      {!data?.length ? <p className="rounded-xl bg-tarjeta p-6 text-sm text-suave">No hay activos asignados para auditar.</p>
-        : <ValidarActivos filas={data} miNombre={miNombre} />}
+      {!data?.length ? <p className="rounded-xl bg-tarjeta p-6 text-sm text-suave">No tienes activos asignados para esta fecha.</p>
+        : <ValidarActivos filas={data} verTodos={supervisa} />}
     </div>
   );
 }

@@ -17,7 +17,6 @@ export function CargarActivos() {
     if (falta.length) return setMsg({ ok: false, t: `No es el formato de auditoría. Faltan: ${falta.join(", ")}` });
     setPrev({ archivo: f.name, filas: filas.map(mapearActivo) });
   }
-  const aud = prev ? Object.entries(prev.filas.reduce<Record<string, number>>((a, f) => ((a[f.auditor_asignado ?? "Sin auditor"] = (a[f.auditor_asignado ?? "Sin auditor"] ?? 0) + 1), a), {})) : [];
   return (
     <section className="rounded-xl bg-tarjeta p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -28,7 +27,7 @@ export function CargarActivos() {
       {prev && (
         <div className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-borde p-3 text-sm">
           <span className="font-medium">{prev.archivo}</span><span>{prev.filas.length} activos</span>
-          {aud.map(([a, n]) => <span key={a} className="rounded-full bg-fondo px-2 py-0.5">{a}: {n}</span>)}
+          
           <div className="ml-auto flex gap-2">
             <button onClick={() => setPrev(null)} className="h-10 rounded-lg border border-borde px-3">Cancelar</button>
             <button disabled={pend} onClick={() => start(async () => { const r = await cargarActivos(prev.archivo, prev.filas); setMsg({ ok: r.ok, t: r.mensaje }); if (r.ok) setPrev(null); })}

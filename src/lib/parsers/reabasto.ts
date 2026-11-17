@@ -82,7 +82,7 @@ export function mapearActivo(r: Record<string, string>) {
   const n = (v: string | undefined) => (v == null || v === "" ? null : Number(String(v).replace(/,/g, "")));
   return {
     fecha: f ? f.slice(0, 10) : new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }),
-    auditor_asignado: (r["AUDITOR"] || "").trim().toUpperCase() || null,
+    auditor_asignado: null as string | null, // lo asigna quien carga, desde la app
     area: r["AREA"] || r["ÁREA"] || null,
     usuario_reabasto: r["REABASTECIDO"] || null,
     turno: r["TURNO DE REBASTO"] || r["TURNO DE REABASTO"] || r["TURNO"] || null,
