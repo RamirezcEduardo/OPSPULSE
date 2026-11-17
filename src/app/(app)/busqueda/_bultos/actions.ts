@@ -46,10 +46,13 @@ export async function cargarBultos(_clas: Clas, archivo: string, filas: FilaBult
   return { ok: true, mensaje: `${n("perdidos")} a Perdidos · ${n("sin_ubicacion")} a Sin ubicación${repetidos ? ` · ${repetidos} LPN repetidos unificados` : ""} · ${count ?? 0} pendientes ya no figuran.` };
 }
 
-export async function registrarRecuperacion(clas: Clas, r: { bulto_id: number; unidades: number; valor: number; ubicacion_encontrado: string | null; dni_recupero: string | null; fotos: string[]; comentario: string | null }) {
+export async function registrarRecuperacion(clas: Clas, r: { bulto_id: number; unidades: number; valor: number; ubicacion_encontrado: string | null; fotos: string[]; comentario: string | null }) {
   const supabase = await createClient();
   if (!(r.unidades > 0)) return { ok: false, mensaje: "Indica las unidades recuperadas." };
-  const { error } = await supabase.from("bulto_recuperacion").insert({ ...r, fotos: r.fotos.length ? r.fotos : null });
+  // Quien recuperó = usuario con sesión (registrado_por) + su DNI del perfil
+  const { data: cl } = await supabase.auth.getClaims();
+  const { data: perfil } = await supabase.from("perfil").select("dni, usuario").eq("id", cl?.claims?.sub ?? "").maybeSingle();
+  const { error } = await supabase.from("bulto_recuperacion").insert({ ...r, dni_recupero: perfil?.dni ?? perfil?.usuario ?? null, fotos: r.fotos.length ? r.fotos : null });
   if (error) return { ok: false, mensaje: error.message.includes("row-level") ? "Tu rol no puede registrar recuperaciones." : error.message };
   revalidatePath(ruta(clas));
   return { ok: true, mensaje: "Recuperación registrada." };

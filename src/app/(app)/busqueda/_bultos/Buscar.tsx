@@ -21,12 +21,11 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
   const [sup, setSup] = useState("");
   const [causo, setCauso] = useState("");
   const [ubic, setUbic] = useState("");
-  const [dni, setDni] = useState("");
   const [coment, setComent] = useState("");
   const [fotos, setFotos] = useState<string[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [pend, start] = useTransition();
-  const abrir = (b: B) => { setSel(b); setUnd(String(b.unidades_pendientes ?? "")); setSup(b.supervisor ?? ""); setCauso(b.usuario_causo ?? ""); setUbic(""); setDni(""); setComent(""); setFotos([]); setMsg(null); };
+  const abrir = (b: B) => { setSel(b); setUnd(String(b.unidades_pendientes ?? "")); setSup(b.supervisor ?? ""); setCauso(b.usuario_causo ?? ""); setUbic(""); setComent(""); setFotos([]); setMsg(null); };
 
   function guardarResp() {
     start(async () => {
@@ -40,7 +39,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
     const u = Number(und);
     const valorUnit = sel!.cantidad_actual ? Number(sel!.valor_total ?? 0) / Number(sel!.cantidad_actual) : 0;
     start(async () => {
-      const r = await registrarRecuperacion(clas, { bulto_id: sel!.id, unidades: u, valor: Math.round(u * valorUnit * 100) / 100, ubicacion_encontrado: ubic.toUpperCase() || null, dni_recupero: dni || null, fotos, comentario: coment || null });
+      const r = await registrarRecuperacion(clas, { bulto_id: sel!.id, unidades: u, valor: Math.round(u * valorUnit * 100) / 100, ubicacion_encontrado: ubic.toUpperCase() || null, fotos, comentario: coment || null });
       setMsg(r.mensaje);
       if (r.ok) {
         const resta = Number(sel!.unidades_pendientes) - u;
@@ -73,7 +72,6 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
         <input type="number" inputMode="numeric" value={und} onChange={(e) => setUnd(e.target.value)} className="h-12 rounded-xl border border-borde bg-tarjeta px-3 text-lg font-normal" />
         <span className="text-xs font-normal text-suave">Si es menos que lo pendiente, queda como PARCIAL y puedes registrar más después.</span></label>
       <label className="flex flex-col gap-1 text-sm">Ubicación donde se encontró<input value={ubic} onChange={(e) => setUbic(e.target.value)} className="h-12 rounded-xl border border-borde bg-tarjeta px-3 font-mono" /></label>
-      <label className="flex flex-col gap-1 text-sm">DNI de quien lo recuperó<input inputMode="numeric" value={dni} onChange={(e) => setDni(e.target.value)} className="h-12 rounded-xl border border-borde bg-tarjeta px-3" /></label>
       <Fotos carpeta={clas} fotos={fotos} setFotos={setFotos} />
       <textarea rows={2} placeholder="Comentario (opcional)" value={coment} onChange={(e) => setComent(e.target.value)} className="rounded-xl border border-borde bg-tarjeta p-3 text-sm" />
       <button disabled={pend || !(Number(und) > 0)} onClick={guardar} className="h-14 rounded-xl bg-marca text-lg font-bold text-white disabled:opacity-40">{pend ? "Guardando…" : "Registrar recuperación"}</button>
