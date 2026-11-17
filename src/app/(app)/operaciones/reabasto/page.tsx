@@ -20,7 +20,9 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
   const desde = sp.desde ?? ultima ?? new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
   const hasta = sp.hasta ?? desde;
   const { data, error } = await supabase.from("auditoria_activo").select("*").gte("fecha", desde).lte("fecha", hasta).limit(20000);
-  const { data: uo } = await supabase.from("usuario_operativo").select("usuario,nombre").limit(10000);
+  // Solo los usuarios presentes (la API devuelve máx. 1000 filas por consulta)
+  const codigos = [...new Set(((data ?? []) as A[]).map((x) => x.usuario_reabasto).filter(Boolean) as string[])];
+  const { data: uo } = codigos.length ? await supabase.from("usuario_operativo").select("usuario,nombre").in("usuario", codigos) : { data: [] };
   const nombres = new Map((uo ?? []).map((u) => [String(u.usuario).toLowerCase(), u.nombre as string]));
   const nom = (u: string | null) => (u ? nombres.get(u.toLowerCase()) ?? u : null);
   const r = ((data ?? []) as A[]).map((x) => ({ ...x, usuario_reabasto: nom(x.usuario_reabasto) }));
