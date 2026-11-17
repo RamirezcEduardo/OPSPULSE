@@ -35,11 +35,19 @@ export async function cargarBultos(_clas: Clas, archivo: string, filas: FilaBult
   return { ok: true, mensaje: `${n("perdidos")} a Perdidos · ${n("sin_ubicacion")} a Sin ubicación · ${count ?? 0} pendientes ya no figuran.` };
 }
 
-export async function registrarRecuperacion(clas: Clas, r: { bulto_id: number; unidades: number; valor: number; area_encontrado: string | null; ubicacion_encontrado: string | null; dni_recupero: string | null; fotos: string[]; comentario: string | null }) {
+export async function registrarRecuperacion(clas: Clas, r: { bulto_id: number; unidades: number; valor: number; ubicacion_encontrado: string | null; dni_recupero: string | null; fotos: string[]; comentario: string | null }) {
   const supabase = await createClient();
   if (!(r.unidades > 0)) return { ok: false, mensaje: "Indica las unidades recuperadas." };
   const { error } = await supabase.from("bulto_recuperacion").insert({ ...r, fotos: r.fotos.length ? r.fotos : null });
   if (error) return { ok: false, mensaje: error.message.includes("row-level") ? "Tu rol no puede registrar recuperaciones." : error.message };
   revalidatePath(ruta(clas));
   return { ok: true, mensaje: "Recuperación registrada." };
+}
+
+export async function asignarResponsables(clas: Clas, id: number, supervisor: string, usuarioCauso: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("bulto_asignar", { p_id: id, p_supervisor: supervisor, p_usuario_causo: usuarioCauso });
+  if (error) return { ok: false, mensaje: error.message.replace(/^.*?: /, "") };
+  revalidatePath(ruta(clas));
+  return { ok: true, mensaje: "Responsables guardados." };
 }

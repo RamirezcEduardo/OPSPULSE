@@ -4,12 +4,12 @@ import { useMemo, useState, useTransition } from "react";
 import { Search } from "lucide-react";
 import { Fotos } from "@/components/Fotos";
 import { fmtNum, fmtSoles } from "@/lib/formato";
-import { registrarRecuperacion } from "./actions";
+import { asignarResponsables, registrarRecuperacion } from "./actions";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type B = Record<string, any>;
 
-export function BuscarBultos({ clas, bultos }: { clas: "perdidos" | "sin_ubicacion"; bultos: B[] }) {
+export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "perdidos" | "sin_ubicacion"; bultos: B[]; supervisores: string[]; usuarios: string[] }) {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<B | null>(null);
   const [lista, setLista] = useState(bultos);
@@ -18,20 +18,29 @@ export function BuscarBultos({ clas, bultos }: { clas: "perdidos" | "sin_ubicaci
     return t ? lista.filter((b) => `${b.nro_lpn} ${b.cod_alternat} ${b.descripcion ?? ""} ${b.ubicacion ?? ""}`.toUpperCase().includes(t)) : lista;
   }, [q, lista]);
   const [und, setUnd] = useState("");
-  const [area, setArea] = useState("");
+  const [sup, setSup] = useState("");
+  const [causo, setCauso] = useState("");
   const [ubic, setUbic] = useState("");
   const [dni, setDni] = useState("");
   const [coment, setComent] = useState("");
   const [fotos, setFotos] = useState<string[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [pend, start] = useTransition();
-  const abrir = (b: B) => { setSel(b); setUnd(String(b.unidades_pendientes ?? "")); setArea(""); setUbic(""); setDni(""); setComent(""); setFotos([]); setMsg(null); };
+  const abrir = (b: B) => { setSel(b); setUnd(String(b.unidades_pendientes ?? "")); setSup(b.supervisor ?? ""); setCauso(b.usuario_causo ?? ""); setUbic(""); setDni(""); setComent(""); setFotos([]); setMsg(null); };
+
+  function guardarResp() {
+    start(async () => {
+      const r = await asignarResponsables(clas, sel!.id, sup, causo);
+      setMsg(r.mensaje);
+      if (r.ok) setLista((l) => l.map((x) => x.id === sel!.id ? { ...x, supervisor: sup || null, usuario_causo: causo || null } : x));
+    });
+  }
 
   function guardar() {
     const u = Number(und);
     const valorUnit = sel!.cantidad_actual ? Number(sel!.valor_total ?? 0) / Number(sel!.cantidad_actual) : 0;
     start(async () => {
-      const r = await registrarRecuperacion(clas, { bulto_id: sel!.id, unidades: u, valor: Math.round(u * valorUnit * 100) / 100, area_encontrado: area || null, ubicacion_encontrado: ubic.toUpperCase() || null, dni_recupero: dni || null, fotos, comentario: coment || null });
+      const r = await registrarRecuperacion(clas, { bulto_id: sel!.id, unidades: u, valor: Math.round(u * valorUnit * 100) / 100, ubicacion_encontrado: ubic.toUpperCase() || null, dni_recupero: dni || null, fotos, comentario: coment || null });
       setMsg(r.mensaje);
       if (r.ok) {
         const resta = Number(sel!.unidades_pendientes) - u;
@@ -47,16 +56,23 @@ export function BuscarBultos({ clas, bultos }: { clas: "perdidos" | "sin_ubicaci
       <div>
         <p className="font-mono text-xl font-extrabold">{sel.nro_lpn}</p>
         <p className="mt-1 font-semibold">{sel.cod_alternat} · {sel.descripcion}</p>
-        <p className="text-sm text-suave">Salió de {sel.ubicacion ?? "—"} · {sel.area ?? "—"} · {sel.dias_demora} días</p>
+        <p className="text-sm text-suave">Ubicación {sel.ubicacion ?? "—"} · {sel.dias_demora} días</p>
         <p className="text-sm">Pendiente <b>{fmtNum(sel.unidades_pendientes)} und</b> · {fmtSoles(Number(sel.valor_pendiente))}</p>
       </div>
+      <section className="flex flex-col gap-3 rounded-xl border border-borde p-3">
+        <p className="text-sm font-semibold">Responsables</p>
+        <label className="flex flex-col gap-1 text-sm">Supervisor a cargo
+          <input list="sup-bultos" value={sup} onChange={(e) => setSup(e.target.value.toUpperCase())} className="h-12 rounded-xl border border-borde bg-tarjeta px-3" />
+          <datalist id="sup-bultos">{supervisores.map((x) => <option key={x} value={x} />)}</datalist></label>
+        <label className="flex flex-col gap-1 text-sm">Usuario que causó la falencia
+          <input list="usr-bultos" value={causo} onChange={(e) => setCauso(e.target.value)} autoCapitalize="none" className="h-12 rounded-xl border border-borde bg-tarjeta px-3" />
+          <datalist id="usr-bultos">{usuarios.map((x) => <option key={x} value={x} />)}</datalist></label>
+        <button disabled={pend} onClick={guardarResp} className="h-11 rounded-xl border-2 border-marca font-semibold text-marca disabled:opacity-40">Guardar responsables</button>
+      </section>
       <label className="flex flex-col gap-1 text-sm font-semibold">Unidades recuperadas
         <input type="number" inputMode="numeric" value={und} onChange={(e) => setUnd(e.target.value)} className="h-12 rounded-xl border border-borde bg-tarjeta px-3 text-lg font-normal" />
         <span className="text-xs font-normal text-suave">Si es menos que lo pendiente, queda como PARCIAL y puedes registrar más después.</span></label>
-      <div className="grid grid-cols-2 gap-2">
-        <label className="flex flex-col gap-1 text-sm">Área donde se encontró<input value={area} onChange={(e) => setArea(e.target.value.toUpperCase())} className="h-12 rounded-xl border border-borde bg-tarjeta px-3" /></label>
-        <label className="flex flex-col gap-1 text-sm">Ubicación<input value={ubic} onChange={(e) => setUbic(e.target.value)} className="h-12 rounded-xl border border-borde bg-tarjeta px-3 font-mono" /></label>
-      </div>
+      <label className="flex flex-col gap-1 text-sm">Ubicación donde se encontró<input value={ubic} onChange={(e) => setUbic(e.target.value)} className="h-12 rounded-xl border border-borde bg-tarjeta px-3 font-mono" /></label>
       <label className="flex flex-col gap-1 text-sm">DNI de quien lo recuperó<input inputMode="numeric" value={dni} onChange={(e) => setDni(e.target.value)} className="h-12 rounded-xl border border-borde bg-tarjeta px-3" /></label>
       <Fotos carpeta={clas} fotos={fotos} setFotos={setFotos} />
       <textarea rows={2} placeholder="Comentario (opcional)" value={coment} onChange={(e) => setComent(e.target.value)} className="rounded-xl border border-borde bg-tarjeta p-3 text-sm" />
@@ -79,7 +95,7 @@ export function BuscarBultos({ clas, bultos }: { clas: "perdidos" | "sin_ubicaci
             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${b.dias_demora > 15 ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-900"}`}>{b.dias_demora} días</span>
           </div>
           <span className="truncate text-sm">{b.cod_alternat} · {b.descripcion}</span>
-          <span className="text-xs text-suave">{b.area ?? "—"} · pend. {fmtNum(b.unidades_pendientes)} und · {fmtSoles(Number(b.valor_pendiente))} {b.estado === "parcial" ? "· PARCIAL" : ""} {b.alerta ? `· ${b.alerta}` : ""}</span>
+          <span className="text-xs text-suave">{b.supervisor ? `Sup. ${b.supervisor}` : "Sin supervisor"} · pend. {fmtNum(b.unidades_pendientes)} und · {fmtSoles(Number(b.valor_pendiente))} {b.estado === "parcial" ? "· PARCIAL" : ""} {b.alerta ? `· ${b.alerta}` : ""}</span>
         </button>))}
     </div>
   );
