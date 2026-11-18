@@ -59,6 +59,8 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
         <p className="text-sm text-suave">Ubicación {sel.ubicacion ?? "—"} · {sel.dias_demora} días{sel.nro_grupo ? ` · Grupo ${sel.nro_grupo}` : ""}</p>
         {sel.ubicacion_envio && <p className="mt-1 rounded-lg bg-fondo p-2 text-sm">📍 Reportado en <b className="font-mono">{sel.ubicacion_envio}</b>
           {Array.isArray(sel.otras_ubicaciones) && sel.otras_ubicaciones.length > 1 && <span className="text-suave"> · también: {sel.otras_ubicaciones.map((o: { ubicacion: string }) => o.ubicacion).filter((u: string) => u !== sel.ubicacion_envio).join(", ")}</span>}</p>}
+        <p className={`mt-1 rounded-lg p-2 text-sm font-semibold ${String(sel.diagnostico).startsWith("MASTER") ? "bg-blue-100 text-blue-900" : String(sel.diagnostico).startsWith("UNIDADES") ? "bg-amber-100 text-amber-900" : "bg-fondo"}`}>
+          🔎 {sel.diagnostico}{sel.caja_estandar > 1 ? ` · caja de ${sel.caja_estandar} und` : ""}{sel.masters ? ` · ${sel.masters} master${sel.masters > 1 ? "s" : ""}` : ""}{sel.unidades_sueltas ? ` + ${sel.unidades_sueltas} und` : ""}</p>
         <p className="text-sm">Pendiente <b>{fmtNum(sel.unidades_pendientes)} und</b> · {fmtSoles(Number(sel.valor_pendiente))}</p>
       </div>
       <section className="flex flex-col gap-3 rounded-xl border border-borde p-3">
@@ -97,6 +99,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${b.dias_demora > 15 ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-900"}`}>{b.dias_demora} días</span>
           </div>
           <span className="truncate text-sm">{b.cod_alternat} · {b.descripcion}</span>
+          <span className="text-xs font-semibold">{String(b.diagnostico).split(" –")[0]} · {b.familia_producto}</span>
           {b.ubicacion_envio && <span className="text-xs">📍 <span className="font-mono">{b.ubicacion_envio}</span>{b.nro_grupo ? ` · Grupo ${b.nro_grupo}` : ""}</span>}
           <span className="text-xs text-suave">{b.supervisor ? `Sup. ${b.supervisor}` : "Sin supervisor"} · pend. {fmtNum(b.unidades_pendientes)} und · {fmtSoles(Number(b.valor_pendiente))} {b.estado === "parcial" ? "· PARCIAL" : ""} {b.alerta ? `· ${b.alerta}` : ""}</span>
         </button>))}
