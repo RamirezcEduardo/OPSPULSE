@@ -35,4 +35,4 @@ export const moduloDe = (path: string) =>
   MODULOS.filter((m) => path === m.href || path.startsWith(m.href + "/")).sort((a, b) => b.href.length - a.href.length)[0]?.href ?? null;
 
 /** Pantallas de registro (formularios móviles) dentro de un módulo. */
-export const esRegistro = (path: string) => /\/(buscar|validar|auditar)(\/|$)/.test(path);
+export const esRegistro = (path: string) => /\/(buscar|validar|auditar|registrar)(\/|$)/.test(path);

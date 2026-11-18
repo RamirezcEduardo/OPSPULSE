@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, ClipboardCheck } from "lucide-react";
 
-export function TabsSeccion({ base, segunda = "Búsqueda" }: { base: string; segunda?: string }) {
+export function TabsSeccion({ base, segunda = "Búsqueda", ruta = "buscar", primera = "Dashboard y carga" }: { base: string; segunda?: string; ruta?: string; primera?: string }) {
   const p = usePathname();
   const tabs = [
-    { href: base, label: "Dashboard y carga", icon: BarChart3, activo: p === base },
-    { href: `${base}/buscar`, label: segunda, icon: ClipboardCheck, activo: p.startsWith(`${base}/buscar`) },
+    { href: base, label: primera, icon: BarChart3, activo: p === base },
+    { href: `${base}/${ruta}`, label: segunda, icon: ClipboardCheck, activo: p.startsWith(`${base}/${ruta}`) },
   ];
   return (
     <nav aria-label="Secciones" className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-tarjeta p-1 sm:inline-grid sm:w-auto">
