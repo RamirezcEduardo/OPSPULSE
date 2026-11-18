@@ -3,7 +3,7 @@ import { Formulario5S } from "./Formulario";
 
 export const dynamic = "force-dynamic";
 
-const AREAS_BASE = ["ESTANTERIA 1", "ESTANTERIA 2", "MEZZANINE 1", "MEZZANINE 2", "KNAPP MANUAL", "AFRAME", "ADAPTO", "RESERVA", "RECEPCION", "DESPACHO", "MERMA", "CONTROLADOS"];
+const AREAS_BASE = ["ESTANTERIA 1", "ESTANTERIA 2", "MEZZANINE 1", "MEZZANINE 2", "KNAPP MANUAL 1", "KNAPP MANUAL 2", "RESERVA", "RECEPCION", "DESPACHO", "CONTROLADOS"];
 
 export default async function Auditar5S() {
   const supabase = await createClient();
@@ -11,7 +11,7 @@ export default async function Auditar5S() {
     supabase.from("auditoria_5s").select("area, supervisor").order("creado_en", { ascending: false }).limit(500),
     supabase.from("parametro").select("valor").eq("clave", "supervisores").maybeSingle(),
   ]);
-  const areas = [...new Set([...(data ?? []).map((d) => d.area as string), ...AREAS_BASE].filter(Boolean))].sort();
+  const areas = AREAS_BASE;
   const supervisores = [...new Set([...((par?.valor as string[]) ?? []), ...(data ?? []).map((d) => d.supervisor as string)].filter(Boolean))].sort();
   const hoy = new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" });
   return (
