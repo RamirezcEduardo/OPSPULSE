@@ -114,7 +114,7 @@ export default async function CincoS({ searchParams }: { searchParams: Promise<{
           <h2 className="mb-3 font-semibold">Base de auditorías ({r.length})</h2>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[960px] text-sm">
-              <thead className="text-left text-suave"><tr>{["Fecha", "Área", "Zona", "Auditor", "Supervisor", "1S", "2S", "3S", "4S", "5S", "Total", "Nivel", "Hallazgos", "Fotos"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead className="text-left text-suave"><tr>{["Fecha", "Área", "Zona", "Auditor", "Supervisor", "1S", "2S", "3S", "4S", "5S", "Total", "Nivel", "Hallazgos", "Fotos", ""].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>{r.map((x) => (
                 <tr key={x.id} className="border-b border-borde align-top">
                   <td className="px-2 py-2 whitespace-nowrap">{fmtFecha(x.fecha + "T12:00:00-05:00")}</td>
@@ -125,6 +125,7 @@ export default async function CincoS({ searchParams }: { searchParams: Promise<{
                   <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${NIVEL_C[x.nivel ?? ""] ?? ""}`}>{x.nivel ?? "—"}</span></td>
                   <td className="max-w-64 px-2 py-2 text-xs">{x.hallazgos ?? "—"}{x.accion_correctiva && <><br /><span className="text-suave">Acción: {x.accion_correctiva}</span></>}</td>
                   <td className="px-2 py-2">{x.fotos?.length ?? 0}</td>
+                  <td className="px-2 py-2"><Link href={`/inventario/5s/informe/${x.id}`} className="whitespace-nowrap rounded-lg bg-marca px-3 py-1.5 text-xs font-semibold text-white">Ver informe</Link></td>
                 </tr>))}</tbody>
             </table>
           </div>
