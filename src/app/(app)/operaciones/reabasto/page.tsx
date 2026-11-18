@@ -28,7 +28,13 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
   const r = ((data ?? []) as A[]).map((x) => ({ ...x, usuario_reabasto: nom(x.usuario_reabasto) }));
   const val = r.filter((x) => x.validado_en);
   const conf = val.filter((x) => Number(x.diferencia) === 0);
-  const dif = val.filter((x) => Number(x.diferencia) !== 0);
+  const dif0 = val.filter((x) => Number(x.diferencia) !== 0);
+  // Diferencia menor a un master pack = error de picking (no cuenta contra el reabasto)
+  const skus = [...new Set(dif0.map((x) => x.cod_alternat))];
+  const { data: pr } = skus.length ? await supabase.from("producto").select("cod_alternat,caja_estandar").in("cod_alternat", skus) : { data: [] };
+  const cajas = new Map((pr ?? []).map((p) => [String(p.cod_alternat), Number(p.caja_estandar) || 0]));
+  const dif = dif0.map((x) => { const c = cajas.get(x.cod_alternat) ?? 0; return { ...x, caja: c, picking: c > 1 && Math.abs(Number(x.diferencia)) < c }; });
+  const difReab = dif.filter((x) => !x.picking);
   const falt = dif.reduce((s, x) => s + Math.min(0, Number(x.diferencia)), 0);
   const sob = dif.reduce((s, x) => s + Math.max(0, Number(x.diferencia)), 0);
   const inp = "h-10 rounded-lg border border-borde bg-tarjeta px-2 text-sm text-texto";
@@ -52,26 +58,29 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
           { t: "Activos asignados", v: fmtNum(r.length) },
           { t: "Validados", v: `${fmtNum(val.length)} / ${fmtNum(r.length)}`, s: `${r.length ? Math.round((val.length / r.length) * 100) : 0}% de avance` },
           { t: "Conformes", v: fmtNum(conf.length) },
-          { t: "Con diferencia", v: fmtNum(dif.length), alerta: dif.length > 0 },
-          { t: "% Exactitud", v: val.length ? `${((conf.length / val.length) * 100).toFixed(1)}%` : "—", alerta: val.length > 0 && conf.length < val.length },
+          { t: "Error de reabasto", v: fmtNum(difReab.length), s: "dif. ≥ 1 master pack", alerta: difReab.length > 0 },
+          { t: "Error de picking", v: fmtNum(dif.length - difReab.length), s: "dif. < 1 master pack (no cuenta)" },
+          { t: "% Cumplimiento reabasto", v: val.length ? `${(((val.length - difReab.length) / val.length) * 100).toFixed(1)}%` : "—", alerta: difReab.length > 0 },
           { t: "Unidades dif.", v: `${fmtNum(falt)} / +${fmtNum(sob)}`, s: "faltante / sobrante", alerta: falt < 0 },
         ]} />
         <section className="rounded-xl bg-tarjeta p-5">
           <h2 className="mb-3 font-semibold">Activos con diferencia ({dif.length})</h2>
           {!dif.length ? <p className="text-sm text-suave">{val.length ? "✓ Todos los validados están conformes." : "Aún no hay validaciones."}</p> : (
             <div className="overflow-x-auto"><table className="w-full min-w-[860px] text-sm">
-              <thead className="text-left text-suave"><tr>{["Fecha", "Activo", "SKU", "Descripción", "Reabasteció", "WMS", "Físico", "Dif.", "Observación", "Auditor"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
+              <thead className="text-left text-suave"><tr>{["Fecha", "Activo", "SKU", "Descripción", "Reabasteció", "WMS", "Físico", "Dif.", "Master", "Atribuible a", "Observación", "Auditor"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
               <tbody>{dif.sort((a, b) => Number(a.diferencia) - Number(b.diferencia)).map((x) => (
                 <tr key={x.id} className="border-b border-borde">
                   <td className="whitespace-nowrap px-2 py-2">{fmtFecha(x.fecha + "T12:00:00-05:00")}</td><td className="px-2 py-2 font-mono text-xs">{x.ubicacion}</td>
                   <td className="px-2 py-2">{x.cod_alternat}</td><td className="max-w-56 truncate px-2 py-2">{x.descripcion}</td><td className="px-2 py-2">{x.usuario_reabasto}</td>
                   <td className="px-2 py-2 tabular-nums">{x.cant_sistema}</td><td className="px-2 py-2 tabular-nums">{x.cant_fisica}</td>
                   <td className={`px-2 py-2 font-bold tabular-nums ${Number(x.diferencia) < 0 ? "text-marca" : "text-blue-700"}`}>{Number(x.diferencia) > 0 ? "+" : ""}{x.diferencia}</td>
+                  <td className="px-2 py-2 tabular-nums">{x.caja > 1 ? x.caja : "—"}</td>
+                  <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${x.picking ? "bg-blue-100 text-blue-800" : "bg-orange-100 text-orange-800"}`}>{x.picking ? "Picking" : "Reabasto"}</span></td>
                   <td className="max-w-64 px-2 py-2 text-xs">{x.observacion ?? "—"}</td><td className="px-2 py-2">{x.auditor_asignado}</td>
                 </tr>))}</tbody></table></div>)}
         </section>
         <div className="grid gap-4 lg:grid-cols-2">
-          <Barras titulo="Diferencias por usuario que reabasteció" datos={agrupar(dif, (x) => x.usuario_reabasto).slice(0, 12)} />
+          <Barras titulo="Errores de reabasto por usuario" datos={agrupar(difReab, (x) => x.usuario_reabasto).slice(0, 12)} />
           <Barras titulo="Avance por auditor (%)" datos={avance} fmt={(n) => `${n}%`} />
           <Barras titulo="Diferencias por área" datos={agrupar(dif, (x) => x.area)} />
           <Barras titulo="Activos por turno de reabasto" datos={agrupar(r, (x) => x.turno)} />
