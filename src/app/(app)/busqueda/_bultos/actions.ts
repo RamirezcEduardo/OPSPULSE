@@ -65,3 +65,19 @@ export async function asignarResponsables(clas: Clas, id: number, supervisor: st
   revalidatePath(ruta(clas));
   return { ok: true, mensaje: "Responsables guardados." };
 }
+
+export async function vincularGrupos(filas: { nro_lpn: string; nro_grupo: string }[]) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("bultos_vincular_grupo", { p_filas: filas });
+  if (error) return { ok: false, mensaje: error.message.replace(/^.*?: /, "") };
+  revalidatePath("/busqueda/perdidos"); revalidatePath("/busqueda/sin-ubicacion");
+  return { ok: true, mensaje: `${data} bultos vinculados a su Nro de grupo.` };
+}
+
+export async function cargarUbicacionesReportadas(filas: { nro_grupo: string; ubicacion: string; fecha: string | null; usuario: string | null }[]) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("bultos_ubicaciones", { p_filas: filas });
+  if (error) return { ok: false, mensaje: error.message.replace(/^.*?: /, "") };
+  revalidatePath("/busqueda/perdidos"); revalidatePath("/busqueda/sin-ubicacion");
+  return { ok: true, mensaje: `${data} bultos con ubicación reportada.` };
+}
