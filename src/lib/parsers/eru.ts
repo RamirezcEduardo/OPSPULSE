@@ -72,5 +72,15 @@ export function resumirEru(filas: Record<string, string>[]) {
     un_orig: n(x.r["Un Orig"]), un_ajuste: x.un, ubi: x.ubi, area_archivo: x.area, subarea: x.sub, descripcion_archivo: x.r["Descripcion"] || null, valor_ref: x.r["Valor Ref 1"] || null,
   })).filter((a) => { const k = [a.nro_grupo, a.cod_alternat, a.fecha, a.un_ajuste, a.ubicacion, a.nro_lpn].join("|"); if (vistos.has(k)) return false; vistos.add(k); return true; });
 
-  return { mes, filas: filas.length, resumen: [...res.values()], productos: [...prod.values()], ajustes };
+  // ERI por mes + área + SKU (hoja DB del CONTROL ERI): conteos, faltante y sobrante
+  const eri = new Map<string, { mes: string; area: string; cod_alternat: string; descripcion: string | null; conteos: number; faltante: number; sobrante: number }>();
+  for (const x of del) {
+    if (!x.sku) continue;
+    const area = x.area || "SIN ÁREA"; const k = `${area}|${x.sku}`;
+    const v = eri.get(k) ?? { mes, area, cod_alternat: x.sku, descripcion: x.r["Descripcion"]?.trim() || null, conteos: 0, faltante: 0, sobrante: 0 };
+    if (x.grupo === "CONTEO") v.conteos++; else if (x.un < 0) v.faltante -= x.un; else v.sobrante += x.un;
+    eri.set(k, v);
+  }
+
+  return { mes, filas: filas.length, eri: [...eri.values()], resumen: [...res.values()], productos: [...prod.values()], ajustes };
 }

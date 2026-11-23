@@ -35,13 +35,13 @@ export function CargarEru({ cargados }: { cargados: string[] }) {
       if (e0) throw e0;
       const { data: c, error: e1 } = await s.from("carga").insert({ fuente: "ERU", archivo: prev.archivo, filas: r.filas, cargado_por: u.user?.id }).select("id").single();
       if (e1) throw e1;
-      const lotes: [string, Record<string, unknown>[]][] = [["eru_resumen", r.resumen], ["eru_producto", r.productos], ["ajuste", r.ajustes]];
+      const lotes: [string, Record<string, unknown>[]][] = [["eru_resumen", r.resumen], ["eru_producto", r.productos], ["eri_sku", r.eri], ["ajuste", r.ajustes]];
       for (const [t, filas] of lotes) for (let i = 0; i < filas.length; i += 1000) {
         setPaso(`Guardando ${t.replace("_", " ")} ${fmtNum(Math.min(i + 1000, filas.length))} / ${fmtNum(filas.length)}…`);
         const { error } = await s.from(t).insert(filas.slice(i, i + 1000).map((x) => ({ ...x, carga_id: c.id })));
         if (error) throw error;
       }
-      await s.from("carga").update({ insertadas: r.resumen.length + r.productos.length + r.ajustes.length }).eq("id", c.id);
+      await s.from("carga").update({ insertadas: r.resumen.length + r.productos.length + r.eri.length + r.ajustes.length }).eq("id", c.id);
       setMsg({ ok: true, t: `Mes ${r.mes} cargado ✓` }); setPrev(null); router.refresh();
     } catch (e) { setMsg({ ok: false, t: `Error: ${(e as { message?: string }).message ?? e}` }); } finally { setPaso(null); }
   }
@@ -60,6 +60,7 @@ export function CargarEru({ cargados }: { cargados: string[] }) {
           <span>Mes <b>{prev.r.mes}</b>{cargados.includes(prev.r.mes) && <span className="ml-1 text-amber-700">(ya cargado: se reemplazará)</span>}</span>
           <span>{fmtNum(prev.r.filas)} filas</span>
           <span>{fmtNum(prev.r.resumen.reduce((a, x) => a + x.contadas, 0))} ubicaciones contadas</span>
+          <span>{fmtNum(prev.r.eri.length)} SKUs·área (ERI)</span>
           <span>{fmtNum(prev.r.ajustes.length)} movimientos de bolsa</span>
           <div className="ml-auto flex gap-2">
             <button onClick={() => setPrev(null)} className="h-10 rounded-lg border border-borde px-3">Cancelar</button>
