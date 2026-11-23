@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { eruIniciar, eruLote, eruTerminar } from "./actions";
 import { ACEPTA, leerArchivo } from "@/lib/parsers/archivo";
 import { COLS_ERU, resumirEru, type ResumenEru } from "@/lib/parsers/eru";
 import { fmtNum } from "@/lib/formato";
@@ -27,21 +27,17 @@ export function CargarEru({ cargados }: { cargados: string[] }) {
   async function cargar() {
     if (!prev) return;
     const { r } = prev;
-    const s = createClient();
     try {
       setPaso("Preparando…");
-      const { data: u } = await s.auth.getUser();
-      const { error: e0 } = await s.rpc("eru_borrar_mes", { p_mes: r.mes });
-      if (e0) throw e0;
-      const { data: c, error: e1 } = await s.from("carga").insert({ fuente: "ERU", archivo: prev.archivo, filas: r.filas, cargado_por: u.user?.id }).select("id").single();
-      if (e1) throw e1;
+      const c = await eruIniciar(r.mes, prev.archivo, r.filas);
+      if (!c.ok) throw new Error(c.mensaje);
       const lotes: [string, Record<string, unknown>[]][] = [["eru_resumen", r.resumen], ["eru_producto", r.productos], ["eri_sku", r.eri], ["ajuste", r.ajustes]];
       for (const [t, filas] of lotes) for (let i = 0; i < filas.length; i += 1000) {
         setPaso(`Guardando ${t.replace("_", " ")} ${fmtNum(Math.min(i + 1000, filas.length))} / ${fmtNum(filas.length)}…`);
-        const { error } = await s.from(t).insert(filas.slice(i, i + 1000).map((x) => ({ ...x, carga_id: c.id })));
-        if (error) throw error;
+        const x = await eruLote(t, c.id, filas.slice(i, i + 1000));
+        if (!x.ok) throw new Error(x.mensaje);
       }
-      await s.from("carga").update({ insertadas: r.resumen.length + r.productos.length + r.eri.length + r.ajustes.length }).eq("id", c.id);
+      await eruTerminar(c.id, r.resumen.length + r.productos.length + r.eri.length + r.ajustes.length);
       setMsg({ ok: true, t: `Mes ${r.mes} cargado ✓` }); setPrev(null); router.refresh();
     } catch (e) { setMsg({ ok: false, t: `Error: ${(e as { message?: string }).message ?? e}` }); } finally { setPaso(null); }
   }
