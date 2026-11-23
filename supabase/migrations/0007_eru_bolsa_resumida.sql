@@ -12,28 +12,28 @@ create table if not exists eru_resumen (
 );
 create index if not exists eru_resumen_mes on eru_resumen (mes);
 
--- ERI por mes + área + SKU (como hojas DB / DB_AREA)
-create table if not exists eri_sku_mes (
+-- Faltantes/sobrantes por producto y día (como hoja "Productos mes"); base del ERI por SKU
+create table if not exists eru_producto (
   id           bigint generated always as identity primary key,
   carga_id     uuid references carga(id) on delete cascade,
   mes          text not null,
-  area         text,
-  cod_alternat text not null,
-  descripcion  text,
-  conteos      int not null default 0,
+  dia          date not null,
+  semana       text,
+  ubi          text, area text,
+  cod_alternat text,
+  descripcion  text not null,
   faltante     numeric not null default 0,
   sobrante     numeric not null default 0,
-  neto         numeric not null default 0,
-  unique nulls not distinct (mes, area, cod_alternat)
+  unique nulls not distinct (dia, ubi, area, descripcion)
 );
-create index if not exists eri_mes on eri_sku_mes (mes);
+create index if not exists eru_producto_mes on eru_producto (mes);
 
 alter table ajuste add column if not exists mes text, add column if not exists ubi text, add column if not exists area_archivo text, add column if not exists subarea text,
   add column if not exists descripcion_archivo text, add column if not exists valor_ref text;
 create index if not exists ajuste_mes on ajuste (mes);
 
 do $$ declare t text; begin
-  foreach t in array array['eru_resumen','eri_sku_mes'] loop
+  foreach t in array array['eru_resumen','eru_producto'] loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists "lectura" on %I', t);
     execute format('create policy "lectura" on %I for select to authenticated using (true)', t);
@@ -50,7 +50,7 @@ language plpgsql security definer set search_path = public as $$
 begin
   if nivel_modulo('/cargas') <> 'editar' then raise exception 'Sin permiso para cargar'; end if;
   delete from eru_resumen where mes = p_mes;
-  delete from eri_sku_mes where mes = p_mes;
+  delete from eru_producto where mes = p_mes;
   delete from ajuste where fuente = 'ERU' and mes = p_mes;
 end $$;
 grant execute on function public.eru_borrar_mes(text) to authenticated;

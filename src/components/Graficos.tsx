@@ -16,7 +16,7 @@ export function Barras({ titulo, datos, fmt = fmtNum }: { titulo: string; datos:
   );
 }
 
-export function Kpis({ items }: { items: { t: string; v: string; s?: string; alerta?: boolean }[] }) {
+export function Kpis({ items }: { items: { t: string; v: React.ReactNode; s?: string; alerta?: boolean }[] }) {
   return (
     <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
       {items.map((k) => (
