@@ -26,7 +26,7 @@ export const GRUPOS: { titulo: string; items: { href: string; label: string }[] 
     { href: "/busqueda/sin-ubicacion", label: "Sin ubicación" },
     { href: "/busqueda/shortpick", label: "Shortpick" },
   ] },
-  { titulo: "Otros", items: [{ href: "/cargas", label: "Cargas" }] },
+  { titulo: "Otros", items: [{ href: "/cargas", label: "Cargas y correcciones" }] },
 ];
 export const MODULOS = GRUPOS.flatMap((g) => g.items);
 
