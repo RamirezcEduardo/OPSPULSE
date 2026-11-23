@@ -1,3 +1,4 @@
+import { normArea } from "@/lib/areas";
 import { createClient } from "@/lib/supabase/server";
 import { fmtFecha, fmtNum } from "@/lib/formato";
 import { Barras, Kpis, agrupar } from "@/components/Graficos";
@@ -25,7 +26,7 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
   const { data: uo } = codigos.length ? await supabase.from("usuario_operativo").select("usuario,nombre").in("usuario", codigos) : { data: [] };
   const nombres = new Map((uo ?? []).map((u) => [String(u.usuario).toLowerCase(), u.nombre as string]));
   const nom = (u: string | null) => (u ? nombres.get(u.toLowerCase()) ?? u : null);
-  const r = ((data ?? []) as A[]).map((x) => ({ ...x, usuario_reabasto: nom(x.usuario_reabasto) }));
+  const r = ((data ?? []) as A[]).map((x) => ({ ...x, area: normArea(x.area), usuario_reabasto: nom(x.usuario_reabasto) }));
   const val = r.filter((x) => x.validado_en);
   const conf = val.filter((x) => Number(x.diferencia) === 0);
   const dif0 = val.filter((x) => Number(x.diferencia) !== 0);

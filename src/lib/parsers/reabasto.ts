@@ -1,3 +1,4 @@
+import { normArea } from "@/lib/areas";
 import { fechaFlexible, fechaLima, num } from "./csv";
 
 export const COLUMNAS_REABASTO = ["Nro Tarea", "Cod Alternat", "Ubic destino", "Estado de tarea", "Tipo Asignac", "Cantidad asignada", "Fe y Hr Crea"];
@@ -83,7 +84,7 @@ export function mapearActivo(r: Record<string, string>) {
   return {
     fecha: f ? f.slice(0, 10) : new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }),
     auditor_asignado: null as string | null, // lo asigna quien carga, desde la app
-    area: r["AREA"] || r["ÁREA"] || null,
+    area: normArea(r["AREA"] || r["ÁREA"]),
     usuario_reabasto: r["REABASTECIDO"] || null,
     turno: r["TURNO DE REBASTO"] || r["TURNO DE REABASTO"] || r["TURNO"] || null,
     producto: r["PRODUCTO"] || null,
