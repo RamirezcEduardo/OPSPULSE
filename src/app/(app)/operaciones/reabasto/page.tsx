@@ -63,8 +63,10 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
           { t: "% Cumplimiento reabasto", v: val.length ? `${(((val.length - difReab.length) / val.length) * 100).toFixed(1)}%` : "—", alerta: difReab.length > 0 },
           { t: "Unidades dif.", v: `${fmtNum(falt)} / +${fmtNum(sob)}`, s: "faltante / sobrante", alerta: falt < 0 },
         ]} />
-        <section className="rounded-xl bg-tarjeta p-5">
-          <h2 className="mb-3 font-semibold">Activos con diferencia ({dif.length})</h2>
+        <details open className="group rounded-xl bg-tarjeta p-5">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold">Activos con diferencia ({dif.length})
+            <span className="rounded-lg border border-borde px-3 py-1 text-xs font-semibold text-suave"><span className="group-open:hidden">Mostrar ▾</span><span className="hidden group-open:inline">Ocultar ▴</span></span></summary>
+          <div className="mt-3">
           {!dif.length ? <p className="text-sm text-suave">{val.length ? "✓ Todos los validados están conformes." : "Aún no hay validaciones."}</p> : (
             <div className="overflow-x-auto"><table className="w-full min-w-[860px] text-sm">
               <thead className="text-left text-suave"><tr>{["Fecha", "Activo", "SKU", "Descripción", "Reabasteció", "WMS", "Físico", "Dif.", "Master", "Atribuible a", "Observación", "Auditor"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
@@ -78,7 +80,8 @@ export default async function ReabastoPage({ searchParams }: { searchParams: Pro
                   <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${x.picking ? "bg-blue-100 text-blue-800" : "bg-orange-100 text-orange-800"}`}>{x.picking ? "Picking" : "Reabasto"}</span></td>
                   <td className="max-w-64 px-2 py-2 text-xs">{x.observacion ?? "—"}</td><td className="px-2 py-2">{x.auditor_asignado}</td>
                 </tr>))}</tbody></table></div>)}
-        </section>
+        </div>
+        </details>
         <div className="grid gap-4 lg:grid-cols-2">
           <Barras titulo="Errores de reabasto por usuario" datos={agrupar(difReab, (x) => x.usuario_reabasto).slice(0, 12)} />
           <Barras titulo="Avance por auditor (%)" datos={avance} fmt={(n) => `${n}%`} />
