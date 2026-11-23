@@ -3,6 +3,7 @@ import { obtenerPermisos } from "@/lib/permisos";
 import { fmtNum } from "@/lib/formato";
 import { Barras, Kpis } from "@/components/Graficos";
 import { CargarEru } from "./CargarEru";
+import { Lineas } from "@/components/Lineas";
 
 export const dynamic = "force-dynamic";
 type R = { mes: string; dia: string; semana: string; ubi: string | null; area: string | null; subarea: string | null; contadas: number; con_error: number };
@@ -37,13 +38,19 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
   const [c, e] = sum(r); const [ca, ea] = sum(r.filter((x) => x.ubi === "ACTIVO")); const [cr, er] = sum(r.filter((x) => x.ubi === "RESERVA"));
   const color = (x: number) => (x >= 0.98 ? "text-green-700" : x < 0.95 ? "text-marca" : "text-amber-600");
 
-  const mk = () => { let q = s.from("eru_producto").select("dia,descripcion,area,faltante,sobrante").neq("ubi", "RESERVA");
+  const mk = () => { let q = s.from("eru_producto").select("dia,ubi,descripcion,area,faltante,sobrante");
     if (mes) q = q.eq("mes", mes); if (sp.semana) q = q.eq("semana", sp.semana); if (sp.tipo) q = q.eq("ubi", sp.tipo); if (sp.area) q = q.eq("area", sp.area); return q; };
-  const pr: { dia: string; descripcion: string; area: string | null; faltante: number; sobrante: number }[] = [];
+  const neta = new Map<string, number>();
+  const pr: { dia: string; ubi: string | null; descripcion: string; area: string | null; faltante: number; sobrante: number }[] = [];
+  const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"];
   for (let d = 0; meses.length; d += 1000) { const { data } = await mk().order("id").range(d, d + 999); pr.push(...(data ?? [])); if (!data || data.length < 1000 || pr.length >= 100000) break; }
   const prod = new Map<string, { dias: Set<string>; f: number; so: number; areas: Map<string, number> }>();
-  pr.forEach((x) => { const v = prod.get(x.descripcion) ?? { dias: new Set(), f: 0, so: 0, areas: new Map() }; v.dias.add(x.dia); v.f += Number(x.faltante); v.so += Number(x.sobrante); if (x.area) v.areas.set(x.area, (v.areas.get(x.area) ?? 0) + 1); prod.set(x.descripcion, v); });
+  pr.forEach((x) => { neta.set(x.descripcion, (neta.get(x.descripcion) ?? 0) + Number(x.faltante) - Number(x.sobrante)); if (x.ubi === "RESERVA") return; const v = prod.get(x.descripcion) ?? { dias: new Set(), f: 0, so: 0, areas: new Map() }; v.dias.add(x.dia); v.f += Number(x.faltante); v.so += Number(x.sobrante); if (x.area) v.areas.set(x.area, (v.areas.get(x.area) ?? 0) + 1); prod.set(x.descripcion, v); });
   const top = [...prod].map(([d, v]) => ({ d, n: v.dias.size, f: v.f, so: v.so, area: [...v.areas].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—" })).sort((a, b) => b.n - a.n).slice(0, 15);
+
+  const perdida = [...neta].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 15);
+  const serie = (k: (x: R) => string, etq: (k: string) => string = (x) => x) => eruPor(r, k).sort((a, b) => a[0].localeCompare(b[0])).map(([x, v]) => ({ x: etq(x), ERU: v }));
+  const semaforo = (v: number) => (v >= 98 ? "bg-green-600" : v >= 95 ? "bg-amber-400" : "bg-red-600");
 
   // Cuadros por zona: RESERVA como una fila, áreas de ACTIVO, ACTIVO TOTAL y TOTAL CD
   const zona = (x: R) => (x.ubi === "RESERVA" ? "RESERVA" : x.area || "ACTIVO");
@@ -54,17 +61,19 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
   const celda = (a: R[]) => { const [cc, ee] = sum(a); return cc ? pct(cc, ee) : null; };
   const flecha = (v: number | null) => (v == null ? "" : `${v >= 0.95 ? "▲" : v >= 0.85 ? "►" : "▼"} ${fp(v)}`);
   const colorF = (v: number | null) => (v == null ? "" : v >= 0.95 ? "text-green-700 dark:text-green-400" : v >= 0.85 ? "text-amber-600" : "text-marca");
-  const cuadro = (titulo: string, nota: string | null, cols: string[], porCol: (x: R, c: string) => boolean, modo: "eru" | "cont", total = true) => (
+  const cuadro = (titulo: string, nota: string | null, cols: string[], porCol: (x: R, c: string) => boolean, modo: "eru" | "cont", total = true) => { const maxCont = Math.max(1, ...zonas.filter((z) => z !== "RESERVA").flatMap((z) => cols.map((c) => sum(r.filter((x) => zona(x) === z && porCol(x, c)))[0]))); return (
     <section className="rounded-xl bg-tarjeta p-5">
-      <h2 className="font-semibold">{titulo}</h2>{nota && <p className="text-xs text-suave">{nota}</p>}
+      <h2 className="font-semibold text-marca">{titulo}</h2>{nota && <p className="text-xs text-suave">{nota}</p>}
       <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[720px] text-sm">
-        <thead className="text-left text-suave"><tr><th className="border-b border-borde px-2 py-2 font-medium">Zona</th>{cols.map((c) => <th key={c} className="border-b border-borde px-2 py-2 text-right font-medium">{c.length === 10 ? `${c.slice(8)}/${c.slice(5, 7)}` : c}</th>)}{total && <th className="border-b border-borde px-2 py-2 text-right font-medium">Total periodo</th>}</tr></thead>
+        <thead className="bg-grafito text-white"><tr><th className="px-2 py-2 text-left font-semibold">Zona</th>{cols.map((c) => <th key={c} className="px-2 py-2 text-right font-semibold">{c.length === 10 ? `${c.slice(8)}/${c.slice(5, 7)}` : c}</th>)}{total && <th className="px-2 py-2 text-right font-semibold">Total periodo</th>}</tr></thead>
         <tbody>{filasZona.map(([z, f]) => { const rz = r.filter(f); const tot = z === "ACTIVO TOTAL" || z === "TOTAL CD";
-          const val = (a: R[]) => { if (modo === "cont") { const n = sum(a)[0]; return <span>{n ? fmtNum(n) : ""}</span>; } const v = celda(a); return <span className={colorF(v)}>{flecha(v)}</span>; };
-          return <tr key={z} className={`border-b border-borde ${tot ? "font-bold" : ""}`}><td className="px-2 py-1.5">{z}</td>
-            {cols.map((c) => <td key={c} className="px-2 py-1.5 text-right tabular-nums">{val(rz.filter((x) => porCol(x, c)))}</td>)}
+          const val = (a: R[]) => { if (modo === "cont") { const n = sum(a)[0]; return <span className={!n || tot || z === "RESERVA" ? "" : n < 50 ? "text-red-600" : "text-green-700 dark:text-green-400"}>{n ? fmtNum(n) : ""}</span>; } const v = celda(a); return <span className={colorF(v)}>{flecha(v)}</span>; };
+          return <tr key={z} className={`border-b border-borde ${tot || z === "RESERVA" ? "bg-fondo font-bold" : ""}`}><td className="px-2 py-1.5">{z}</td>
+            {cols.map((c) => { const a = rz.filter((x) => porCol(x, c)); const n = sum(a)[0];
+              const bg = modo !== "cont" || !n || tot || z === "RESERVA" ? undefined : n < 50 ? "rgba(239,68,68,0.15)" : `rgba(59,130,246,${(0.45 * n) / maxCont})`;
+              return <td key={c} className="px-2 py-1.5 text-right tabular-nums" style={{ background: bg }}>{val(a)}</td>; })}
             {total && <td className="px-2 py-1.5 text-right tabular-nums">{val(rz)}</td>}</tr>; })}</tbody></table></div>
-    </section>);
+    </section>); };
 
   const sel = "h-10 rounded-lg border border-borde bg-tarjeta px-2 text-sm text-texto";
 
@@ -90,18 +99,27 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
           { t: "ERU RESERVA", v: <span className={color(pct(cr, er))}>{fp(pct(cr, er))}</span>, s: `${fmtNum(cr)} contadas` },
         ]} />
         <div className="grid gap-4 lg:grid-cols-2">
-          <Barras titulo="ERU por área (%)" datos={eruPor(r, (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n}%`} />
-          <Barras titulo="ERU por semana (%)" datos={eruPor(r, (x) => x.semana).sort((a, b) => a[0].localeCompare(b[0]))} fmt={(n) => `${n}%`} />
+          <Lineas titulo="ERU por mes" etiquetas datos={serie((x) => x.mes, (m) => MESES[Number(m.slice(5)) - 1])} series={["ERU"]} />
+          <Lineas titulo="ERU por semana" etiquetas datos={serie((x) => x.semana)} series={["ERU"]} />
+          <Lineas titulo="ERU por día" datos={serie((x) => x.dia, (d) => `${d.slice(8)}/${d.slice(5, 7)}`)} series={["ERU"]} min={0} />
+          <Barras titulo="Pérdida neta por producto (top 15)" datos={perdida} />
+          <Barras titulo="ERU por área" max={100} datos={eruPor(r, (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n.toFixed(1)}%`} color={semaforo}
+            leyenda={<><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-red-600" />Menor a 95%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-amber-400" />Entre 95% y 98%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-green-600" />Desde 98%</span></>} />
+          <Barras titulo="Productos con más incidencias ERU (top 15)" datos={top.map((x) => [x.d, x.n] as [string, number])} color={() => "bg-red-600"} />
         </div>
         <section className="rounded-xl bg-tarjeta p-5">
           <h2 className="mb-3 font-semibold">Productos con más incidencias <span className="text-xs font-normal text-suave">(días con error de ubicación, sin reservas) · según filtros</span></h2>
           <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead className="text-left text-suave"><tr>{["Producto", "Incidencias", "Und falt.", "Und sobr.", "Área"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
             <tbody>{top.map((x) => (
-              <tr key={x.d} className="border-b border-borde"><td className="px-2 py-1.5">{x.d}</td><td className="px-2 py-1.5 font-bold tabular-nums">{x.n}</td>
+              <tr key={x.d} className="border-b border-borde"><td className="px-2 py-1.5">{x.d}</td><td className="px-2 py-1.5 text-right font-bold tabular-nums" style={{ background: `rgba(239,68,68,${(0.6 * x.n) / Math.max(1, top[0]?.n ?? 1)})` }}>{x.n}</td>
                 <td className="px-2 py-1.5 tabular-nums text-marca">{fmtNum(x.f)}</td><td className="px-2 py-1.5 tabular-nums text-blue-700">{fmtNum(x.so)}</td><td className="px-2 py-1.5">{x.area}</td></tr>))}</tbody></table></div>
         </section>
         {cuadro("Evolutivo ERU por zona · últimos 7 días del filtro", "▲ ≥95%  ► 85–95%  ▼ <85%", dias, (x, c) => x.dia === c, "eru")}
+        <Lineas titulo="ERU diario por zona (últimos 7 días del filtro)" min={0} destacar="TOTAL CD"
+          series={[...zonas.filter((z) => z !== "RESERVA").map((z) => [z, sum(r.filter((x) => zona(x) === z && dias.includes(x.dia)))[0]] as const).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([z]) => z), "TOTAL CD"]}
+          datos={dias.map((d) => { const o: Record<string, string | number | null> = { x: `${d.slice(8)}/${d.slice(5, 7)}` };
+            for (const [z, f] of filasZona) { const v = celda(r.filter((x) => f(x) && x.dia === d)); o[z] = v == null ? null : Math.round(v * 1000) / 10; } return o; })} />
         {cuadro("Ubicaciones contadas por zona y día · mismos días del cuadro anterior", "La cantidad contada cambia mucho entre días y zonas: el ERU diario no es comparable para medir mejora. Usar semanal o total del periodo.", dias, (x, c) => x.dia === c, "cont")}
         {cuadro("Evolutivo ERU por zona · por semana (últimas 8 semanas)", "▲ ≥95%  ► 85–95%  ▼ <85%", sems, (x, c) => x.semana === c, "eru", false)}
         {cuadro("Ubicaciones contadas por zona · por semana", null, sems, (x, c) => x.semana === c, "cont", false)}

@@ -1,7 +1,7 @@
 import { fmtNum } from "@/lib/formato";
 
-export function Barras({ titulo, datos, fmt = fmtNum }: { titulo: string; datos: [string, number][]; fmt?: (n: number) => string }) {
-  const max = Math.max(1, ...datos.map(([, v]) => Math.abs(v)));
+export function Barras({ titulo, datos, fmt = fmtNum, color, max: maxFijo, leyenda }: { titulo: string; datos: [string, number][]; fmt?: (n: number) => string; color?: (v: number) => string; max?: number; leyenda?: React.ReactNode }) {
+  const max = maxFijo ?? Math.max(1, ...datos.map(([, v]) => Math.abs(v)));
   return (
     <section className="rounded-xl bg-tarjeta p-5">
       <h2 className="mb-4 font-semibold">{titulo}</h2>
@@ -9,9 +9,10 @@ export function Barras({ titulo, datos, fmt = fmtNum }: { titulo: string; datos:
         <ul className="flex flex-col gap-2.5">{datos.map(([k, v]) => (
           <li key={k} title={`${k}: ${fmt(v)}`} className="grid grid-cols-[minmax(0,11rem)_1fr_auto] items-center gap-3 text-sm">
             <span className="truncate text-suave">{k}</span>
-            <span className="h-3.5 rounded-r bg-texto/70 hover:bg-marca" style={{ width: `${(Math.abs(v) / max) * 100}%` }} />
+            <span className={`h-3.5 rounded-r ${color ? color(v) : "bg-texto/70 hover:bg-marca"}`} style={{ width: `${(Math.abs(v) / max) * 100}%` }} />
             <span className="tabular-nums">{fmt(v)}</span>
           </li>))}</ul>)}
+      {leyenda && <div className="mt-3 flex flex-wrap gap-3 text-xs text-suave">{leyenda}</div>}
     </section>
   );
 }
