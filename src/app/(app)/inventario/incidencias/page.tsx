@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { fmtFecha, fmtNum } from "@/lib/formato";
 import { Barras, Kpis, agrupar } from "@/components/Graficos";
@@ -14,9 +15,6 @@ export default async function Incidencias({ searchParams }: { searchParams: Prom
   const hasta = sp.hasta ?? hoy;
   const { data, error } = await supabase.from("incidencia").select("*").gte("fecha", desde).lte("fecha", hasta).order("creado_en", { ascending: false }).limit(1000);
   const r = (data ?? []) as I[];
-  // Galería: últimas fotos con URL firmada (bucket privado)
-  const rutas = r.flatMap((x) => (x.fotos ?? []).map((f) => ({ f, x }))).slice(0, 24);
-  const { data: urls } = rutas.length ? await supabase.storage.from("fotos").createSignedUrls(rutas.map((y) => y.f), 3600) : { data: [] };
   const zona = (u: string | null) => (u ? u.split("-")[0] : null);
   const inp = "h-10 rounded-lg border border-borde bg-tarjeta px-2 text-sm text-texto";
   return (
@@ -45,28 +43,19 @@ export default async function Incidencias({ searchParams }: { searchParams: Prom
           <Barras titulo="Reportado por" datos={agrupar(r, (x) => x.nombre).slice(0, 12)} />
           <Barras titulo="Top SKUs" datos={agrupar(r.filter((x) => x.cod_alternat), (x) => `${x.cod_alternat} ${x.descripcion ?? ""}`.slice(0, 40)).slice(0, 10)} />
         </div>
-        {rutas.length > 0 && (
-          <section className="rounded-xl bg-tarjeta p-5">
-            <h2 className="mb-3 font-semibold">Galería de evidencias</h2>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">{rutas.map((y, k) => urls?.[k]?.signedUrl && (
-              <a key={y.f} href={urls[k].signedUrl} target="_blank" rel="noreferrer" className="group relative block overflow-hidden rounded-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={urls[k].signedUrl} alt={`${y.x.tipo} · ${y.x.ubic_asignada ?? ""}`} className="aspect-square w-full object-cover" loading="lazy" />
-                <span className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-[11px] text-white">{y.x.tipo} · {zona(y.x.ubic_asignada) ?? "—"}</span>
-              </a>))}</div>
-          </section>)}
         <section className="rounded-xl bg-tarjeta p-5">
           <h2 className="mb-3 font-semibold">Registro</h2>
           <div className="overflow-x-auto"><table className="w-full min-w-[980px] text-sm">
-            <thead className="text-left text-suave"><tr>{["Fecha", "Reportó", "Tipo", "Proceso", "SKU", "Descripción", "Ubic. asignada", "Cant.", "LPN", "¿Ubicado?", "Encontrada en", "¿Devuelto?", "Comentarios"].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
+            <thead className="text-left text-suave"><tr>{["Fecha", "Reportó", "Tipo", "Proceso", "SKU", "Descripción", "Ubic. asignada", "Encontrada en", "Cant.", "LPN", "¿Ubicado?", "¿Devuelto?", "Comentarios", ""].map((h) => <th key={h} className="border-b border-borde px-2 py-2 font-medium">{h}</th>)}</tr></thead>
             <tbody>{r.map((x) => (
               <tr key={x.id} className="border-b border-borde align-top">
                 <td className="whitespace-nowrap px-2 py-2">{fmtFecha(x.fecha + "T12:00:00-05:00")}</td><td className="px-2 py-2">{x.nombre ?? "—"}</td>
                 <td className="px-2 py-2">{x.tipo}</td><td className="px-2 py-2">{x.proceso}</td><td className="px-2 py-2">{x.cod_alternat ?? "—"}</td>
-                <td className="max-w-48 truncate px-2 py-2">{x.descripcion ?? "—"}</td><td className="px-2 py-2 font-mono text-xs">{x.ubic_asignada ?? "—"}</td>
+                <td className="max-w-48 truncate px-2 py-2">{x.descripcion ?? "—"}</td><td className="px-2 py-2 font-mono text-xs">{x.ubic_asignada ?? "—"}</td><td className="px-2 py-2 font-mono text-xs">{x.ubic_encontrada ?? "—"}</td>
                 <td className="px-2 py-2 tabular-nums">{x.cantidad ?? "—"} {x.unidad ?? ""}</td><td className="px-2 py-2 font-mono text-xs">{x.lpn ?? "—"}</td>
-                <td className="px-2 py-2">{x.ubicado == null ? "—" : x.ubicado ? "Sí" : "No"}</td><td className="px-2 py-2 font-mono text-xs">{x.ubic_encontrada ?? "—"}</td>
+                <td className="px-2 py-2">{x.ubicado == null ? "—" : x.ubicado ? "Sí" : "No"}</td>
                 <td className="px-2 py-2">{x.devuelto == null ? "—" : x.devuelto ? "Sí" : "No"}</td><td className="max-w-56 px-2 py-2 text-xs">{x.comentarios ?? ""}</td>
+                <td className="px-2 py-2"><Link href={`/inventario/incidencias/informe/${x.id}`} className="whitespace-nowrap rounded-lg bg-marca px-3 py-1.5 text-xs font-semibold text-white">Ver informe</Link></td>
               </tr>))}</tbody></table></div>
         </section>
       </>)}
