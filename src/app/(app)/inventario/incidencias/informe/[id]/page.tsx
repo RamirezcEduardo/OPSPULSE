@@ -22,7 +22,7 @@ export default async function InformeIncidencia({ params }: { params: Promise<{ 
     ["¿Ubicado?", sn(x.ubicado)], ["¿Devuelto?", sn(x.devuelto)],
   ];
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5">
+    <div className="informe mx-auto flex max-w-4xl flex-col gap-5">
       <div className="flex items-center justify-between gap-2 print:hidden">
         <Link href="/inventario/incidencias" className="flex items-center gap-1 text-sm text-suave"><ArrowLeft size={16} /> Volver</Link>
         <Imprimir />
@@ -36,12 +36,13 @@ export default async function InformeIncidencia({ params }: { params: Promise<{ 
       <section className="rounded-xl bg-tarjeta p-5">
         <h2 className="mb-3 font-semibold">Evidencias fotográficas ({fotos.length})</h2>
         {!fotos.length ? <p className="text-sm text-suave">Sin fotos.</p> :
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{fotos.map((f, k) => urls?.[k]?.signedUrl && (
+          <div className="fotos grid grid-cols-1 gap-3 sm:grid-cols-2">{fotos.map((f, k) => urls?.[k]?.signedUrl && (
             <a key={f} href={urls[k].signedUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={urls[k].signedUrl} alt={`Evidencia ${k + 1}`} className="max-h-[28rem] w-full bg-fondo object-contain" />
             </a>))}</div>}
       </section>
+      <p className="pie hidden justify-between border-t border-borde pt-2 text-[10px] text-suave"><span>OpsPulse · Supply Chain Control · CD11</span><span>Generado el {new Date().toLocaleString("es-PE", { timeZone: "America/Lima" })}</span></p>
     </div>
   );
 }

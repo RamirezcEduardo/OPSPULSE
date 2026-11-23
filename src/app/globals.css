@@ -34,3 +34,20 @@ body {
   background: var(--fondo);
   color: var(--texto);
 }
+
+/* ---------- Impresión / PDF de informes ---------- */
+@page { size: A4 portrait; margin: 12mm; }
+@media print {
+  :root, :root[data-theme="dark"] { --fondo: #fff; --tarjeta: #fff; --texto: #111; --suave: #555; --borde: #d4d4d4; }
+  html, body { background: #fff !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11px; }
+  aside, nav { display: none !important; }
+  main { padding: 0 !important; }
+  .informe { max-width: none !important; gap: 8px !important; }
+  .informe > section, .informe > header, .informe > details { border: 1px solid #d4d4d4; border-radius: 6px !important; padding: 10px 12px !important; break-inside: avoid; }
+  .informe h1 { font-size: 18px !important; }
+  .informe .fotos { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  .informe .fotos a { break-inside: avoid; }
+  .informe .fotos img { height: 62mm !important; max-height: none !important; width: 100% !important; object-fit: cover !important; border-radius: 4px; }
+  .informe .pie { display: flex !important; }
+  .informe li, .informe tr { break-inside: avoid; }
+}

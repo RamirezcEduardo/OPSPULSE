@@ -22,7 +22,7 @@ export default async function Informe5S({ params }: { params: Promise<{ id: stri
   const obs = BLOQUES_5S.flatMap((b) => b.items.filter(([k]) => resp[k] === "No cumple" || resp[k] === "Parcial").map(([k, t]) => ({ k, t, b: b.nombre, r: resp[k] })));
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5">
+    <div className="informe mx-auto flex max-w-4xl flex-col gap-5">
       <div className="flex items-center justify-between gap-2 print:hidden">
         <Link href="/inventario/5s" className="flex items-center gap-1 text-sm text-suave"><ArrowLeft size={16} /> Volver</Link>
         <Imprimir />
@@ -69,7 +69,7 @@ export default async function Informe5S({ params }: { params: Promise<{ id: stri
       <section className="rounded-xl bg-tarjeta p-5">
         <h2 className="mb-3 font-semibold">Evidencias fotográficas ({fotos.length})</h2>
         {!fotos.length ? <p className="text-sm text-suave">Sin fotos.</p> :
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{fotos.map((f, k) => urls?.[k]?.signedUrl && (
+          <div className="fotos grid grid-cols-1 gap-3 sm:grid-cols-2">{fotos.map((f, k) => urls?.[k]?.signedUrl && (
             <a key={f} href={urls[k].signedUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-lg break-inside-avoid">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={urls[k].signedUrl} alt={`Evidencia ${k + 1}`} className="max-h-96 w-full object-contain bg-fondo" />
@@ -77,7 +77,7 @@ export default async function Informe5S({ params }: { params: Promise<{ id: stri
             </a>))}</div>}
       </section>
 
-      <details className="rounded-xl bg-tarjeta p-5 print:open">
+      <details className="rounded-xl bg-tarjeta p-5">
         <summary className="cursor-pointer font-semibold">Detalle completo de respuestas</summary>
         {BLOQUES_5S.map((b) => (
           <div key={b.s} className="mt-3"><h3 className="text-sm font-bold">{b.nombre}</h3>
@@ -85,6 +85,7 @@ export default async function Informe5S({ params }: { params: Promise<{ id: stri
               <li key={k} className="flex justify-between gap-3 border-b border-borde py-1.5"><span>{t}</span>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${COLOR[resp[k]] ?? "text-suave"}`}>{resp[k] ?? "—"}</span></li>))}</ul></div>))}
       </details>
+      <p className="pie hidden justify-between border-t border-borde pt-2 text-[10px] text-suave"><span>OpsPulse · Supply Chain Control · CD11</span><span>Generado el {new Date().toLocaleString("es-PE", { timeZone: "America/Lima" })}</span></p>
     </div>
   );
 }
