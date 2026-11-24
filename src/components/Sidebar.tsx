@@ -6,28 +6,9 @@ import { useState } from "react";
 import { useTema } from "@/components/Tema";
 import { ChevronDown, ChevronRight, LogOut, Menu, Moon, Settings, Sun, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { GRUPOS } from "@/lib/modulos";
 
-const INVENTARIO = [
-  { href: "/inventario/bolsa", label: "Bolsa de inventario" },
-  { href: "/inventario/cruces", label: "Posibles cruces de bolsa" },
-  { href: "/inventario/vas", label: "VAS" },
-  { href: "/inventario/merma", label: "Merma" },
-  { href: "/inventario/5s", label: "Auditoría 5S" },
-  { href: "/inventario/incidencias", label: "Incidencias" },
-  { href: "/inventario/eru", label: "ERU / ERI" },
-];
-const OPERACIONES = [
-  { href: "/operaciones/recepcion", label: "Auditoría de recepción" },
-  { href: "/operaciones/almacen", label: "Auditoría de almacén" },
-  { href: "/operaciones/reabasto", label: "Auditoría de reabasto" },
-  { href: "/operaciones/picking", label: "Auditoría de picking" },
-  { href: "/operaciones/despacho", label: "Auditoría de despacho" },
-];
-const BUSQUEDA = [
-  { href: "/busqueda/perdidos", label: "Perdidos" },
-  { href: "/busqueda/sin-ubicacion", label: "Sin ubicación" },
-  { href: "/busqueda/shortpick", label: "Shortpick" },
-];
+const [INVENTARIO, OPERACIONES, BUSQUEDA] = GRUPOS.map((g) => g.items);
 const OTROS = [
   { href: "/cargas", label: "Cargas" },
 ];
