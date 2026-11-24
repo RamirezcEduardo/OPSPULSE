@@ -18,7 +18,7 @@ export function CargarUbicaciones() {
       const filas = await leerArchivo(f);
       const h = Object.keys(filas[0] ?? {});
       const cU = busca(h, /^ubicaci[oó]n$/i, /^ubicacion$/i, /^locn/i, /^ubic$/i);
-      const cA = busca(h, /^[áa]rea$/i, /^ubic_area$/i, /^zona$/i, /^area/i);
+      const cA = busca(h, /^ubic_area$/i) ?? busca(h, /^[áa]rea$/i, /^zona$/i, /^area/i);
       if (!cU || !cA) return setMsg({ ok: false, t: `Necesito una columna de ubicación y otra de área. Encontré: ${h.join(", ")}` });
       const cB = busca(h, /^ubi$/i, /^tipo/i), cS = busca(h, /sub.?[áa]rea/i);
       const m = new Map<string, { ubicacion: string; area: string | null; ubi: string | null; subarea: string | null }>();
