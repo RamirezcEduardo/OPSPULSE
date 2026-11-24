@@ -1,0 +1,2 @@
+-- Aplicadas en Supabase: bolsa_motivo, v_bolsa (ajuste + shortpick_mov), bolsa_dashboard(), bolsa_neteos(),
+-- shortpick_mov, shortpick_borrar_mes(), shortpick_resumen(). Ver definiciones en la base.

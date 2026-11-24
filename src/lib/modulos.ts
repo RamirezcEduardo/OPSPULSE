@@ -12,6 +12,7 @@ export const GRUPOS: { titulo: string; items: { href: string; label: string }[] 
     { href: "/inventario/merma", label: "Merma" },
     { href: "/inventario/5s", label: "Auditoría 5S" },
     { href: "/inventario/incidencias", label: "Incidencias" },
+    { href: "/inventario/shortpick", label: "Shortpick" },
     { href: "/inventario/eru", label: "ERU / ERI" },
   ] },
   { titulo: "Seguimiento de operaciones", items: [
