@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { obtenerPermisos } from "@/lib/permisos";
 import { fmtFecha } from "@/lib/formato";
 import { APARTADOS, GESTIONES, TABLA_CARGA, type Gestion } from "./fuentes";
+import { CargarUbicaciones } from "./CargarUbicaciones";
 import { DescargarApartado, DescargarCarga, EliminarCarga, Restablecer } from "./Botones";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,8 @@ export default async function Cargas({ searchParams }: { searchParams: Promise<{
   return (
     <div className="flex flex-col gap-5">
       <header><p className="text-sm text-suave">Solo administradores</p><h1 className="text-2xl font-extrabold">Cargas y correcciones</h1></header>
+
+      <CargarUbicaciones />
 
       <section className="rounded-xl bg-tarjeta p-5">
         <h2 className="mb-1 font-semibold">Descargar reporte por apartado</h2>
