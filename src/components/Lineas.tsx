@@ -60,3 +60,31 @@ export function Combo({ titulo, datos, alto = 300 }: { titulo: string; datos: { 
     </section>
   );
 }
+
+/** Serie + promedio móvil (+ serie opcional en eje derecho, punteada). */
+export function Tendencia({ titulo, nota, datos, color = "#E11D2E", colorMA = "#111827", nombre, nombreMA, nombreDer, soles = true, alto = 300 }: {
+  titulo: string; nota?: string; datos: { x: string; v: number; ma: number; der?: number }[]; color?: string; colorMA?: string; nombre: string; nombreMA: string; nombreDer?: string; soles?: boolean; alto?: number;
+}) {
+  const f = (v: number) => (soles ? `S/ ${Math.round(v).toLocaleString("es-PE")}` : Math.round(v).toLocaleString("es-PE"));
+  return (
+    <section className="rounded-xl bg-tarjeta p-5">
+      <h2 className="font-semibold">{titulo}</h2>{nota && <p className="text-xs text-suave">{nota}</p>}
+      {!datos.length ? <p className="text-sm text-suave">Sin datos.</p> : (
+        <div style={{ height: alto }} className="mt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={datos} margin={{ top: 10, right: nombreDer ? 8 : 16, left: 10, bottom: 4 }}>
+              <CartesianGrid stroke="currentColor" strokeOpacity={0.1} vertical={false} />
+              <XAxis dataKey="x" tick={{ fontSize: 10, fill: "currentColor" }} interval="preserveStartEnd" />
+              <YAxis yAxisId="i" tickFormatter={f} tick={{ fontSize: 10, fill: "currentColor" }} width={80} />
+              {nombreDer && <YAxis yAxisId="d" orientation="right" tickFormatter={f} tick={{ fontSize: 10, fill: "currentColor" }} width={70} />}
+              <Tooltip formatter={(v: number) => f(v)} contentStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line yAxisId="i" dataKey="v" name={nombre} stroke={color} strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
+              <Line yAxisId="i" dataKey="ma" name={nombreMA} stroke={colorMA} strokeWidth={3} dot={false} isAnimationActive={false} />
+              {nombreDer && <Line yAxisId="d" dataKey="der" name={nombreDer} stroke="#9CA3AF" strokeDasharray="5 4" strokeWidth={2} dot={false} isAnimationActive={false} />}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>)}
+    </section>
+  );
+}

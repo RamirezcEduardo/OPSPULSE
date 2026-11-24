@@ -26,5 +26,6 @@ export async function eruLote(tabla: string, carga: string, filas: Record<string
 export async function eruTerminar(carga: string, insertadas: number) {
   const s = await createClient();
   await s.from("carga").update({ insertadas }).eq("id", carga);
+  await s.rpc("refrescar_ubicacion_area");
   revalidatePath("/inventario/eru", "layout");
 }

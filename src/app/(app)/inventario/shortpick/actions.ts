@@ -20,5 +20,5 @@ export async function spLote(carga: string, filas: Record<string, unknown>[]) {
 export async function spTerminar(carga: string, n: number) {
   const s = await createClient();
   await s.from("carga").update({ insertadas: n }).eq("id", carga);
-  revalidatePath("/inventario/shortpick"); revalidatePath("/inventario/bolsa");
+  await s.rpc("refrescar_ubicacion_area"); revalidatePath("/inventario/shortpick"); revalidatePath("/inventario/bolsa");
 }
