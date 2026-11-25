@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
+import * as XLSX from "xlsx";
 import { ACEPTA, leerArchivo } from "@/lib/parsers/archivo";
 import { agregarNoConsiderar, quitarNoConsiderar } from "../actions";
 
+export function plantilla(cols: string[], nombre: string) {
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cols]), "Hoja1"); XLSX.writeFile(wb, `${nombre}.xlsx`);
+}
 const campo = "h-11 w-full rounded-lg border border-borde bg-tarjeta px-3 text-sm";
 export function FormNoConsiderar({ motivos }: { motivos: string[] }) {
   const [f, setF] = useState({ nro_grupo: "", cod_alternat: "", motivo: "", comentario: "" });
@@ -14,7 +18,7 @@ export function FormNoConsiderar({ motivos }: { motivos: string[] }) {
   async function archivo(file: File) {
     const rows = await leerArchivo(file);
     const k = (r: Record<string, string>, ...n: RegExp[]) => r[Object.keys(r).find((x) => n.some((m) => m.test(x))) ?? ""] ?? "";
-    enviar(rows.map((r) => ({ nro_grupo: k(r, /grupo/i), cod_alternat: k(r, /alternat/i) || null, motivo: k(r, /^motivo/i), comentario: k(r, /coment/i) || null })));
+    enviar(rows.map((r) => ({ nro_grupo: k(r, /grupo/i), cod_alternat: k(r, /alternat/i) || null, motivo: k(r, /^motivo auditor/i, /^motivo$/i), comentario: k(r, /coment/i) || null })));
   }
   return (
     <section className="flex flex-col gap-3 rounded-xl bg-tarjeta p-5">
@@ -29,10 +33,11 @@ export function FormNoConsiderar({ motivos }: { motivos: string[] }) {
       </div>
       <div className="flex flex-wrap gap-2">
         <button disabled={p || !f.nro_grupo || !f.motivo} onClick={() => enviar([f])} className="h-11 rounded-lg bg-marca px-5 text-sm font-semibold text-white disabled:opacity-40">{p ? "Guardando…" : "Agregar"}</button>
+        <button onClick={() => plantilla(["Nro Grupo", "Cod Alternat (opcional)", "Motivo auditor", "Comentario", "Fecha registro"], "PLANTILLA NO CONSIDERAR")} className="flex h-11 items-center gap-2 rounded-lg border border-borde px-4 text-sm"><Download size={15} /> Plantilla</button>
         <label className="flex h-11 cursor-pointer items-center gap-2 rounded-lg border border-borde px-4 text-sm"><Upload size={15} /> Subir lista (Excel/CSV)
           <input type="file" accept={ACEPTA} className="sr-only" onChange={(e) => e.target.files?.[0] && archivo(e.target.files[0])} /></label>
       </div>
-      <p className="text-xs text-suave">La lista necesita columnas «Nro Grupo», «Cod Alternat» (opcional), «Motivo» y «Comentario» (opcional), como tu hoja NO CONSIDERAR.</p>
+      <p className="text-xs text-suave">Usa la misma plantilla de tu hoja NO CONSIDERAR: Nro Grupo · Cod Alternat (opcional) · Motivo auditor · Comentario · Fecha registro.</p>
       {msg && <p className={`text-sm ${msg.ok ? "text-green-700" : "text-marca"}`}>{msg.t}</p>}
     </section>
   );

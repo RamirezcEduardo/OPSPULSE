@@ -23,7 +23,7 @@ export default async function NoConsiderar({ searchParams }: { searchParams: Pro
           <form className="flex gap-2"><input name="q" defaultValue={q} placeholder="Buscar Nro Grupo o SKU" className="h-10 rounded-lg border border-borde bg-tarjeta px-3 text-sm" /><button className="h-10 rounded-lg border border-borde px-3 text-sm">Buscar</button></form>
         </div>
         <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
-          <thead className="bg-grafito text-left text-white"><tr>{["Nro Grupo", "Cod Alternat", "Motivo auditor", "Comentario", "Fecha", ""].map((h) => <th key={h} className="px-2 py-2 font-semibold">{h}</th>)}</tr></thead>
+          <thead className="bg-grafito text-left text-white"><tr>{["Nro Grupo", "Cod Alternat (opcional)", "Motivo auditor", "Comentario", "Fecha registro", ""].map((h) => <th key={h} className="px-2 py-2 font-semibold">{h}</th>)}</tr></thead>
           <tbody>{(data ?? []).map((x) => (
             <tr key={x.id} className="border-b border-borde"><td className="px-2 py-1.5">{x.nro_grupo}</td><td className="px-2 py-1.5">{x.cod_alternat || "(todo el grupo)"}</td><td className="px-2 py-1.5">{x.motivo}</td>
               <td className="px-2 py-1.5 text-xs">{x.comentario}</td><td className="px-2 py-1.5">{x.registrado_en ? fmtFecha(x.registrado_en) : "—"}</td><td className="px-2 py-1.5">{editar && <Quitar id={x.id} />}</td></tr>))}</tbody></table></div>

@@ -28,3 +28,22 @@ export async function quitarNoConsiderar(id: number) {
   revalidatePath("/inventario/bolsa", "layout");
   return error ? { ok: false, mensaje: error.message } : { ok: true, mensaje: "" };
 }
+
+export type AM = { fecha: string; nro_grupo: string; cod_alternat: string; descripcion: string; ubicacion: string; cantidad: number; monto: number; tipo: string; motivo: string; comentario: string };
+export async function agregarAjustes(filas: AM[]) {
+  const s = await createClient();
+  const xs = filas.filter((x) => x.fecha && x.motivo && x.tipo && Number.isFinite(x.monto)).map((x, i) => ({
+    fuente: "MANUAL", nro_grupo: x.nro_grupo || "AUDITOR", nro_lpn: `MANUAL-${Date.now()}-${i}`, cod_alternat: x.cod_alternat || null,
+    fecha: `${x.fecha}T12:00:00-05:00`, mes: x.fecha.slice(0, 7), descripcion_archivo: x.descripcion || null, ubicacion: x.ubicacion || null,
+    un_ajuste: x.cantidad || 0, monto_manual: x.monto, tipo: x.tipo.toUpperCase(), motivo_op: x.motivo.toUpperCase(), comentario: x.comentario || null }));
+  if (!xs.length) return { ok: false, mensaje: "Faltan fecha, TIPO, MOTIVO OP o monto." };
+  const { error } = await s.from("ajuste").insert(xs);
+  revalidatePath("/inventario/bolsa", "layout");
+  return error ? { ok: false, mensaje: error.message.includes("row-level") ? "Tu usuario no puede editar la bolsa." : error.message } : { ok: true, mensaje: `${xs.length} ajuste(s) agregados ✓` };
+}
+export async function quitarAjuste(id: number) {
+  const s = await createClient();
+  const { error } = await s.from("ajuste").delete().eq("id", id).eq("fuente", "MANUAL");
+  revalidatePath("/inventario/bolsa", "layout");
+  return error ? { ok: false, mensaje: error.message } : { ok: true, mensaje: "" };
+}
