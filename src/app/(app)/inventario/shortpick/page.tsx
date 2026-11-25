@@ -63,7 +63,7 @@ export default async function Shortpick({ searchParams }: { searchParams: Promis
       {!k?.eventos ? <p className="rounded-xl bg-tarjeta p-6 text-sm text-suave">Sin datos. Sube el archivo de shortpick de cada mes (enero a la fecha).</p> : (<>
         <section className="grid grid-cols-2 overflow-hidden rounded-xl bg-tarjeta sm:grid-cols-4 xl:grid-cols-7">
           {[["Eventos", fmtNum(k.eventos), ""], ["Unidades", fmtNum(k.unidades), ""], ["Valor S/", S(k.valor), "text-marca"], ["SKUs afectados", fmtNum(k.skus), ""], ["Ubicaciones afectadas", fmtNum(k.ubicaciones), ""], ["Áreas con shortpick", fmtNum(k.areas), ""], ["S/ promedio por evento", S(k.valor / Math.max(1, k.eventos)), ""]].map(([t, v, c]) => (
-            <div key={t} className="text-center"><p className="bg-grafito py-1 text-xs font-semibold text-white">{t}</p><p className={`py-3 text-2xl font-bold tabular-nums ${c}`}>{v}</p></div>))}
+            <div key={t} className="text-center"><p className="bg-grafito py-1 text-xs font-semibold text-white">{t}</p><p className={`px-1 py-3 text-lg font-bold tabular-nums sm:text-2xl ${c}`}>{v}</p></div>))}
         </section>
         <div className="grid gap-4 lg:grid-cols-2">
           <Tendencia titulo="Valor S/ por semana y tendencia" nota="Línea roja: S/ de la semana · Línea negra: promedio móvil 4 semanas" nombre="Valor S/" nombreMA="Tendencia S/ (prom. móvil 4 sem.)" datos={sem.map((x, i) => ({ x: x.k.slice(5), v: Number(x.valor), ma: sv[i] }))} />

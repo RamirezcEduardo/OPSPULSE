@@ -56,7 +56,7 @@ export default async function Bolsa({ searchParams }: { searchParams: Promise<Re
 
       <section className="grid grid-cols-2 overflow-hidden rounded-xl bg-tarjeta sm:grid-cols-3 xl:grid-cols-6">
         {[["Faltante S/", S(k.faltante), "text-marca"], ["Sobrante S/", S(k.sobrante), ""], ["Neto S/", S(k.neto), rojo(k.neto)], ["Movimientos", fmtNum(k.movs), ""], ["SKUs", fmtNum(k.skus), ""], ["SKUs sin costo", fmtNum(k.sin_costo), k.sin_costo ? "text-marca" : ""]].map(([t, v, c]) => (
-          <div key={t} className="text-center"><p className="bg-marca py-1 text-xs font-semibold text-white">{t}</p><p className={`py-3 text-2xl font-bold tabular-nums ${c}`}>{v}</p></div>))}
+          <div key={t} className="text-center"><p className="bg-marca py-1 text-xs font-semibold text-white">{t}</p><p className={`px-1 py-3 text-lg font-bold tabular-nums sm:text-2xl ${c}`}>{v}</p></div>))}
       </section>
 
       <section className="rounded-xl bg-tarjeta p-5">
