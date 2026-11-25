@@ -98,7 +98,7 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
           <Lineas titulo="ERU por semana" etiquetas datos={serie((x) => x.semana)} series={["ERU"]} />
           <Lineas titulo="ERU por día" datos={serie((x) => x.dia, (d) => `${d.slice(8)}/${d.slice(5, 7)}`)} series={["ERU"]} min={0} />
           <Barras titulo="Pérdida neta por producto (top 15)" datos={perdida} />
-          <Barras titulo="ERU por área" max={100} datos={eruPor(r, (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n.toFixed(1)}%`} color={semaforo}
+          <Barras titulo="ERU por área" max={100} datos={eruPor(r.filter((x) => x.area), (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n.toFixed(1)}%`} color={semaforo}
             leyenda={<><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-red-600" />Menor a 95%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-amber-400" />Entre 95% y 98%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-green-600" />Desde 98%</span></>} />
           <Barras titulo="Productos con más incidencias ERU (top 15)" datos={top.map((x) => [x.d, x.n] as [string, number])} color={() => "bg-red-600"} />
         </div>
