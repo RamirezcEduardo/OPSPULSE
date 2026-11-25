@@ -7,7 +7,7 @@ import { fechaFlexible } from "@/lib/parsers/csv";
 import { plantilla } from "../no-considerar/Form";
 import { agregarAjustes, quitarAjuste, type AM } from "../actions";
 
-export const COLS_AM = ["Fecha", "Nro Grupo", "Cod Alternat", "Descripción", "Ubicación", "Cantidad", "Monto S/", "TIPO", "MOTIVO OP", "Comentario"];
+import { COLS_AM } from "./cols";
 const campo = "h-10 w-full rounded-lg border border-borde bg-tarjeta px-2 text-sm";
 const num = (v: string) => Number(String(v ?? "").replace(/S\/|\s|,/g, "")) || 0;
 

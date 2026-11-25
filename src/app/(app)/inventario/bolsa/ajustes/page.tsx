@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { obtenerPermisos } from "@/lib/permisos";
 import { fmtFecha, fmtNum, fmtSoles } from "@/lib/formato";
-import { COLS_AM, FormAjustes, QuitarAjuste } from "./Form";
+import { FormAjustes, QuitarAjuste } from "./Form";
+import { COLS_AM } from "./cols";
 
 export const dynamic = "force-dynamic";
 export default async function Ajustes() {
