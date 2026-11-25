@@ -64,13 +64,13 @@ export function resumirEru(filas: Record<string, string>[]) {
   }
 
   // Movimientos de bolsa (hoja «Bolsa mes»): códigos 17/19/29/52/53, sin «SHORT PICK ACTIVO»
-  const vistos = new Set<string>();
+  // Sin quitar repetidos: en el WMS dos movimientos iguales son dos ajustes reales (igual que el Sheets)
   const ajustes = del.filter((x) => BOLSA.has(x.cod) && x.un !== 0 && (x.r["Cod Razon"] ?? "").trim().toUpperCase() !== "SHORT PICK ACTIVO").map((x) => ({
     fuente: "ERU", mes, cod_actividad: x.cod, historial: x.r["Historial de actividad"] || null, nro_grupo: x.r["Nro Grupo"] || null, cod_alternat: x.sku || null,
     ubicacion: x.ubic || null, a_ubicacion: x.r["A ubicación"] || null, fecha: x.iso!, usuario_creado: x.r["Usuario creado"] || null, usuario_modif: x.r["Usuario Modificac"] || null,
     pantalla: x.r["Nombre pantalla"] || null, cod_razon: x.r["Cod Razon"] || null, nro_tarea: x.r["Nro Tarea"] || null, nro_lpn: x.r["Nro LPN"] || null,
     un_orig: n(x.r["Un Orig"]), un_ajuste: x.un, ubi: x.ubi, area_archivo: x.area, subarea: x.sub, descripcion_archivo: x.r["Descripcion"] || null, valor_ref: x.r["Valor Ref 1"] || null,
-  })).filter((a) => { const k = [a.nro_grupo, a.cod_alternat, a.fecha, a.un_ajuste, a.ubicacion, a.nro_lpn].join("|"); if (vistos.has(k)) return false; vistos.add(k); return true; });
+  }));
 
   // ERI por mes + área + SKU (hoja DB del CONTROL ERI): conteos, faltante y sobrante
   const eri = new Map<string, { mes: string; area: string; cod_alternat: string; descripcion: string | null; conteos: number; faltante: number; sobrante: number }>();
