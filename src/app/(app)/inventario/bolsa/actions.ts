@@ -10,10 +10,10 @@ export async function guardarTolerancia(obj: Record<string, number>) {
   return error ? { ok: false, mensaje: error.message } : { ok: true, mensaje: "Tolerancias guardadas ✓" };
 }
 
-export type NC = { nro_grupo: string; cod_alternat: string | null; motivo: string; comentario: string | null };
+export type NC = { nro_grupo: string; cod_alternat: string | null; motivo: string; comentario: string | null; fecha?: string | null };
 export async function agregarNoConsiderar(filas: NC[]) {
   const s = await createClient();
-  const limpias = filas.filter((x) => x.nro_grupo?.trim() && x.motivo?.trim()).map((x) => ({ nro_grupo: x.nro_grupo.trim(), cod_alternat: x.cod_alternat?.trim() || null, motivo: x.motivo.trim().toUpperCase(), comentario: x.comentario?.trim() || null }));
+  const limpias = filas.filter((x) => x.nro_grupo?.trim() && x.motivo?.trim()).map((x) => ({ nro_grupo: x.nro_grupo.trim(), cod_alternat: x.cod_alternat?.trim() || null, motivo: x.motivo.trim().toUpperCase(), comentario: x.comentario?.trim() || null, ...(x.fecha ? { registrado_en: x.fecha } : {}) }));
   if (!limpias.length) return { ok: false, mensaje: "Falta Nro Grupo o motivo." };
   // Una sola fila por Nro Grupo + SKU (la última gana); si ya existe, se actualiza el motivo
   const unicas = [...new Map(limpias.map((x) => [`${x.nro_grupo}|${x.cod_alternat ?? ""}`, x])).values()];

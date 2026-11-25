@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Download, Upload } from "lucide-react";
 import * as XLSX from "xlsx";
 import { ACEPTA, leerArchivo } from "@/lib/parsers/archivo";
+import { fechaFlexible } from "@/lib/parsers/csv";
 import { agregarNoConsiderar, quitarNoConsiderar } from "../actions";
 
 export function plantilla(cols: string[], nombre: string) {
@@ -18,7 +19,7 @@ export function FormNoConsiderar({ motivos }: { motivos: string[] }) {
   async function archivo(file: File) {
     const rows = await leerArchivo(file);
     const k = (r: Record<string, string>, ...n: RegExp[]) => r[Object.keys(r).find((x) => n.some((m) => m.test(x))) ?? ""] ?? "";
-    enviar(rows.map((r) => ({ nro_grupo: k(r, /grupo/i), cod_alternat: k(r, /alternat/i) || null, motivo: k(r, /^motivo auditor/i, /^motivo$/i), comentario: k(r, /coment/i) || null })));
+    enviar(rows.map((r) => ({ nro_grupo: k(r, /grupo/i), cod_alternat: k(r, /alternat/i) || null, motivo: k(r, /^motivo auditor/i, /^motivo$/i), comentario: k(r, /coment/i) || null, fecha: fechaFlexible(k(r, /fecha/i)) })));
   }
   return (
     <section className="flex flex-col gap-3 rounded-xl bg-tarjeta p-5">
