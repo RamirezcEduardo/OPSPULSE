@@ -15,12 +15,14 @@ export async function agregarNoConsiderar(filas: NC[]) {
   const s = await createClient();
   const limpias = filas.filter((x) => x.nro_grupo?.trim() && x.motivo?.trim()).map((x) => ({ nro_grupo: x.nro_grupo.trim(), cod_alternat: x.cod_alternat?.trim() || null, motivo: x.motivo.trim().toUpperCase(), comentario: x.comentario?.trim() || null }));
   if (!limpias.length) return { ok: false, mensaje: "Falta Nro Grupo o motivo." };
-  for (let i = 0; i < limpias.length; i += 1000) {
-    const { error } = await s.from("no_considerar").insert(limpias.slice(i, i + 1000));
+  // Una sola fila por Nro Grupo + SKU (la última gana); si ya existe, se actualiza el motivo
+  const unicas = [...new Map(limpias.map((x) => [`${x.nro_grupo}|${x.cod_alternat ?? ""}`, x])).values()];
+  for (let i = 0; i < unicas.length; i += 1000) {
+    const { error } = await s.from("no_considerar").upsert(unicas.slice(i, i + 1000), { onConflict: "nro_grupo,cod_alternat" });
     if (error) return { ok: false, mensaje: error.message.includes("row-level") ? "Tu usuario no puede editar la bolsa." : error.message };
   }
   revalidatePath("/inventario/bolsa", "layout");
-  return { ok: true, mensaje: `${limpias.length} registro(s) marcados como NO CONSIDERAR ✓` };
+  return { ok: true, mensaje: `${unicas.length} registro(s) marcados como NO CONSIDERAR ✓${unicas.length < limpias.length ? ` (${limpias.length - unicas.length} repetidos en el archivo se unieron)` : ""}` };
 }
 export async function quitarNoConsiderar(id: number) {
   const s = await createClient();
