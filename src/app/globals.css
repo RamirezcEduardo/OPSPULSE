@@ -54,4 +54,4 @@ body {
 
 /* En celular: que las tablas anchas hagan scroll dentro de su tarjeta y no ensanchen la página */
 .grid > * { min-width: 0; }
-html, body { overflow-x: hidden; }
+html, body { overflow-x: clip; }

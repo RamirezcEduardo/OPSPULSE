@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { fmtFecha, fmtNum } from "@/lib/formato";
 import { BLOQUES_5S, nivel5S } from "@/lib/reglas/cincoS";
 
+const col5S = (n: number) => (n >= 85 ? "bg-green-600" : n >= 70 ? "bg-blue-600" : n >= 50 ? "bg-amber-500" : "bg-red-600");
+const LEY5S = <>{[["bg-green-600", "EXCELENTE · 85% a 100%"], ["bg-blue-600", "BUENO · 70% a 84.9%"], ["bg-amber-500", "REGULAR · 50% a 69.9%"], ["bg-red-600", "DEFICIENTE · menos de 50%"]].map(([c, t]) => <span key={t} className="flex items-center gap-1"><i className={`inline-block h-3 w-3 rounded-sm ${c}`} />{t}</span>)}</>;
+
 export const dynamic = "force-dynamic";
 
 type R = {
@@ -22,19 +25,21 @@ const semanaISO = (d: string) => {
   const y = f.getUTCFullYear(); const p = new Date(Date.UTC(y, 0, 4)); return `${y}-S${String(1 + Math.round(((f.getTime() - p.getTime()) / 864e5 - 3 + ((p.getUTCDay() + 6) % 7)) / 7)).padStart(2, "0")}`;
 };
 
-function Barras({ titulo, datos, sufijo = "%" }: { titulo: string; datos: [string, number | null][]; sufijo?: string }) {
+function Barras({ titulo, datos }: { titulo: string; datos: [string, number | null][]; leyenda?: React.ReactNode; fmt?: unknown; color?: unknown; max?: number }) {
+  const NC: Record<string, string> = { EXCELENTE: "text-green-700 dark:text-green-400", BUENO: "text-blue-700 dark:text-blue-400", REGULAR: "text-amber-600", DEFICIENTE: "text-red-600" };
   return (
     <section className="rounded-xl bg-tarjeta p-5">
-      <h2 className="mb-4 font-semibold">{titulo}</h2>
+      <h2 className="mb-2 font-semibold">{titulo}</h2>
+      <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-suave">{LEY5S}</div>
       {!datos.length ? <p className="text-sm text-suave">Sin datos.</p> : (
-        <ul className="flex flex-col gap-2.5">{datos.map(([k, v]) => (
-          <li key={k} title={`${k}: ${v ?? "—"}${sufijo}`} className="grid grid-cols-[minmax(0,14rem)_1fr_auto] items-center gap-3 text-sm">
+        <ul className="flex flex-col gap-2.5">{datos.map(([k, v]) => { const n = nivel5S(v); return (
+          <li key={k} title={`${k}: ${v ?? "—"}% · ${n ?? ""}`} className="grid grid-cols-[minmax(0,12rem)_1fr_auto] items-center gap-3 text-sm">
             <span className="truncate text-suave">{k}</span>
             <span className="relative h-3.5 rounded-r bg-fondo">
-              <span className="absolute inset-y-0 left-0 rounded-r bg-texto/70" style={{ width: `${Math.min(100, v ?? 0)}%` }} />
+              <span className={`absolute inset-y-0 left-0 rounded-r ${v == null ? "" : col5S(v)}`} style={{ width: `${Math.min(100, v ?? 0)}%` }} />
             </span>
-            <span className="w-14 text-right tabular-nums">{v ?? "—"}{sufijo}</span>
-          </li>))}</ul>)}
+            <span className="w-36 text-right tabular-nums">{v ?? "—"}% <b className={`ml-1 text-xs ${n ? NC[n] : ""}`}>{n ?? ""}</b></span>
+          </li>); })}</ul>)}
     </section>
   );
 }
