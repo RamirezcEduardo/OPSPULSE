@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { fmtNum, fmtSoles } from "@/lib/formato";
 import { Barras } from "@/components/Graficos";
 import { Combo } from "@/components/Lineas";
+import { obtenerPermisos } from "@/lib/permisos";
+import { EditarTolerancia } from "./Tolerancia";
 
 export const dynamic = "force-dynamic";
 type F = { k: string; falt: number | null; sob: number | null; neto: number; movs?: number; d?: string };
@@ -19,6 +21,7 @@ const TRIM_ACTUAL = `Q${Math.floor(new Date().getMonth() / 3) + 1}`;
 export default async function Bolsa({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
   const s = await createClient();
+  const { nivel } = await obtenerPermisos();
   const trim = sp.trim ?? TRIM_ACTUAL;
   const gestion = sp.gestion ?? "CONSIDERAR";
   const { data, error } = await s.rpc("bolsa_dashboard", {
@@ -60,7 +63,8 @@ export default async function Bolsa({ searchParams }: { searchParams: Promise<Re
       </section>
 
       <section className="rounded-xl bg-tarjeta p-5">
-        <h2 className="mb-3 font-semibold text-marca">Tolerancia por trimestre (Obj MD)</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 className="font-semibold text-marca">Tolerancia por trimestre (Obj MD)</h2>
+          {nivel("/inventario/bolsa") === "editar" && <EditarTolerancia obj={Object.fromEntries(d.trimestres.map((x) => [x.t, Number(x.obj)]))} />}</div>
         <div className="overflow-x-auto"><table className="w-full min-w-[860px] text-sm">
           <thead className="bg-grafito text-white"><tr>{["Trimestre", "Obj MD S/ (tolerancia)", "MD real S/ (bolsa)", "Pérdida a cubrir S/", "Gabela S/", "% tolerancia usado", "Estado actual"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
           <tbody>{d.trimestres.map((x) => { const p = perdida(Number(x.neto)), pct = x.obj ? p / Number(x.obj) : 0, [e, c] = estado(pct);
@@ -71,7 +75,7 @@ export default async function Bolsa({ searchParams }: { searchParams: Promise<Re
               <td className={`px-2 py-1.5 font-semibold ${c}`}>{e}</td></tr>; })}
             <tr className="bg-fondo text-center font-bold"><td className="px-2 py-1.5 text-left">TOTAL AÑO</td><td className="px-2 py-1.5">{S(totObj)}</td><td className={`px-2 py-1.5 ${rojo(totNeto)}`}>{S(totNeto)}</td><td className="px-2 py-1.5">{S(totPerd)}</td><td className="px-2 py-1.5">{S(totObj - totPerd)}</td><td className="px-2 py-1.5">{totObj ? ((totPerd / totObj) * 100).toFixed(1) : 0}%</td><td className="px-2 py-1.5">Gabela acumulada: {S(totObj - totPerd)}</td></tr>
           </tbody></table></div>
-        <p className="mt-2 text-xs text-suave">El MD real por trimestre usa Gestión = CONSIDERAR, sin importar los filtros de arriba. Objetivos en Configuración → parámetro «bolsa_obj_md».</p>
+        <p className="mt-2 text-xs text-suave">El MD real por trimestre usa Gestión = CONSIDERAR, sin importar los filtros de arriba. Los objetivos se cambian con «Editar tolerancias».</p>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
