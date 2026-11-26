@@ -9,7 +9,7 @@ export async function BuscarBultosPage({ clas, titulo, semana }: { clas: "perdid
   let q = supabase.from("v_bulto")
     .select("id,fecha_creacion,semana_calc,diagnostico,masters,unidades_sueltas,caja_estandar,familia_producto,nro_lpn,nro_grupo,ubicacion_envio,otras_ubicaciones,cod_alternat,descripcion,ubicacion,usuario_causo,cantidad_actual,unidades_recuperadas,unidades_pendientes,val_tot,valor_total,valor_pendiente,estado,dias_demora,alerta,supervisor")
     .eq("clasificacion", clas).in("estado", ["pendiente", "parcial"]).order("dias_demora", { ascending: false }).limit(1000);
-  if (semana) q = q.lte("semana_calc", semana); // los pendientes y parciales de semanas anteriores se arrastran
+  if (semana) q = q.or(`semana_calc.eq.${semana},and(estado.eq.parcial,semana_calc.lt.${semana})`); // solo los parciales se arrastran a la semana siguiente
   const { data } = await q;
   const { data: par } = await supabase.from("parametro").select("valor").eq("clave", "supervisores").maybeSingle();
   const { data: us } = await supabase.from("bulto").select("usuario_recepcion,usuario_causo").limit(5000);
