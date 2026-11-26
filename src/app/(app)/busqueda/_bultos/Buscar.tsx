@@ -94,6 +94,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
         <Search size={18} className="text-suave" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar LPN, SKU, descripción o ubicación" className="h-full flex-1 bg-transparent outline-none" aria-label="Buscar" />
       </label>
       <CopiarLista titulo="LPN sin grupo para copiar" valores={filtrados.filter((b) => !b.nro_grupo).map((b) => b.nro_lpn)} />
+      <CopiarLista titulo="Nro de grupo sin ubicación reportada para copiar" valores={[...new Set(filtrados.filter((b) => b.nro_grupo && !b.ubicacion_envio).map((b) => String(b.nro_grupo)))]} />
       <p className="text-xs text-suave">{filtrados.length} bultos pendientes · más antiguos primero</p>
       {filtrados.slice(0, 200).map((b) => (
         <button key={b.id} onClick={() => abrir(b)} className="flex flex-col gap-1 rounded-xl bg-tarjeta p-4 text-left active:scale-[.99]">
@@ -102,7 +103,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${b.dias_demora > 15 ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-900"}`}>{b.dias_demora} días</span>
           </div>
           <span className="truncate text-sm">{b.cod_alternat} · {b.descripcion}</span>
-          <span className="text-xs font-semibold">{arreglarTexto(String(b.familia_producto ?? ""))}</span>
+          <span className="text-xs font-semibold">{arreglarTexto(String(b.familia_producto ?? "")).replace(/Ã[‘'’]/g, "Ñ")}</span>
           {(() => { const c = Number(b.caja_estandar) || 0, m = Number(b.masters) || 0, u = Number(b.unidades_sueltas) || 0;
             if (c <= 1) return <span className="rounded-lg bg-fondo px-2 py-1 text-xs text-suave">Sin master pack registrado para este SKU</span>;
             const txt = `${m ? `${m} master${m > 1 ? "s" : ""} de ${c} und` : ""}${m && u ? " + " : ""}${u ? `${u} und suelta${u > 1 ? "s" : ""}` : ""}`;
