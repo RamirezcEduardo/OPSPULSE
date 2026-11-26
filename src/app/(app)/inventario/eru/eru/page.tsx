@@ -14,7 +14,7 @@ function eruPor(r: R[], k: (x: R) => string | null) {
   return [...m].map(([key, [c, e]]) => [key, Math.round(pct(c, e) * 1000) / 10] as [string, number]);
 }
 
-export default async function Eru({ searchParams }: { searchParams: Promise<{ mes?: string; semana?: string; tipo?: string; area?: string }> }) {
+export default async function Eru({ searchParams }: { searchParams: Promise<{ mes?: string; semana?: string; tipo?: string; area?: string; abrir?: string }> }) {
   const sp = await searchParams;
   const s = await createClient();
   const { data: ms } = await s.from("eru_resumen").select("mes").order("mes", { ascending: false }).limit(5000);
@@ -64,11 +64,19 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
         <thead className="bg-grafito text-white"><tr><th className="px-2 py-2 text-left font-semibold">Zona</th>{cols.map((c) => <th key={c} className="px-2 py-2 text-right font-semibold">{c.length === 10 ? `${c.slice(8)}/${c.slice(5, 7)}` : c}</th>)}{total && <th className="px-2 py-2 text-right font-semibold">Total periodo</th>}</tr></thead>
         <tbody>{filasZona.map(([z, f]) => { const rz = r.filter(f); const tot = z === "ACTIVO TOTAL" || z === "TOTAL CD";
           const val = (a: R[]) => { if (modo === "cont") { const n = sum(a)[0]; return <span className={!n || tot || z === "RESERVA" ? "" : n < 50 ? "text-red-600" : "text-green-700 dark:text-green-400"}>{n ? fmtNum(n) : ""}</span>; } const v = celda(a); return <span className={colorF(v)}>{flecha(v)}</span>; };
-          return <tr key={z} className={`border-b border-borde ${tot || z === "RESERVA" ? "bg-fondo font-bold" : ""}`}><td className="px-2 py-1.5">{z}</td>
-            {cols.map((c) => { const a = rz.filter((x) => porCol(x, c)); const n = sum(a)[0];
-              const bg = modo !== "cont" || !n || tot || z === "RESERVA" ? undefined : n < 50 ? "rgba(239,68,68,0.15)" : `rgba(59,130,246,${(0.45 * n) / maxCont})`;
+          const abierta = sp.abrir === z;
+          const qs = (abrir?: string) => `?${new URLSearchParams({ ...Object.fromEntries(Object.entries(sp).filter(([k, v]) => k !== "abrir" && v) as [string, string][]), ...(abrir ? { abrir } : {}) })}`;
+          const mz = /^MEZZ/i.test(z);
+          const etq = (n: string | null) => (!n ? "Sin nivel" : mz && /^\d+$/.test(n) ? `Piso ${Math.floor(Number(n) / 10)}` : `Nivel ${n}`);
+          const subs = abierta ? [...new Set(rz.filter((x) => x.nivel).map((x) => etq(x.nivel)))].sort((a, b) => a.localeCompare(b, "es", { numeric: true })) : [];
+          const fila = (nombre: React.ReactNode, filas: R[], clave: string, sub = false) => <tr key={clave} className={`border-b border-borde ${sub ? "bg-orange-50/60 text-xs dark:bg-orange-950/20" : tot || z === "RESERVA" ? "bg-fondo font-bold" : ""}`}><td className={`py-1.5 ${sub ? "pl-6 pr-2" : "px-2"}`}>{nombre}</td>
+            {cols.map((c) => { const a = filas.filter((x) => porCol(x, c)); const n = sum(a)[0];
+              const bg = modo !== "cont" || !n || tot || z === "RESERVA" || sub ? undefined : n < 50 ? "rgba(239,68,68,0.15)" : `rgba(59,130,246,${(0.45 * n) / maxCont})`;
               return <td key={c} className="px-2 py-1.5 text-right tabular-nums" style={{ background: bg }}>{val(a)}</td>; })}
-            {total && <td className="px-2 py-1.5 text-right tabular-nums">{val(rz)}</td>}</tr>; })}</tbody></table></div>
+            {total && <td className="px-2 py-1.5 text-right tabular-nums">{val(filas)}</td>}</tr>;
+          const nombre = tot || z === "RESERVA" ? z : <a href={qs(abierta ? undefined : z)} className="text-marca hover:underline">{abierta ? "▾" : "▸"} {z}</a>;
+          return [fila(nombre, rz, z), ...(abierta && !subs.length ? [<tr key={z + "-vacio"}><td colSpan={cols.length + 2} className="py-1.5 pl-6 text-xs text-suave">Sin detalle por {mz ? "piso" : "nivel"}: vuelve a cargar el ERU del mes.</td></tr>] : []),
+            ...subs.map((n) => fila(n, rz.filter((x) => etq(x.nivel) === n), z + n, true))]; })}</tbody></table></div>
     </section>); };
 
   const sel = "h-10 rounded-lg border border-borde bg-tarjeta px-2 text-sm text-texto";
