@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
+import * as XLSX from "xlsx";
 import { ACEPTA, leerArchivo } from "@/lib/parsers/archivo";
 import { COLS_ACTIVO, mapearActivo, type FilaActivo } from "@/lib/parsers/reabasto";
 import { cargarActivos } from "./actions";
@@ -21,8 +22,12 @@ export function CargarActivos() {
     <section className="rounded-xl bg-tarjeta p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h2 className="font-semibold">Cargar auditoría de activos</h2><p className="text-sm text-suave">Formato «INVENTARIO EN ACTIVOS» (Excel o CSV)</p></div>
+        <div className="flex flex-wrap gap-2">
+        <button onClick={() => { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["FECH. AUDITADA", "AREA", "REABASTECIDO", "TURNO DE REABASTO", "PRODUCTO", "ALTERNO", "DESCRIPCION", "ACTIVO", "CANT. WMS", "CANT. FISICO", "OBSERVACION"]]), "INVENTARIO EN ACTIVOS"); XLSX.writeFile(wb, "PLANTILLA INVENTARIO EN ACTIVOS.xlsx"); }}
+          className="flex h-11 items-center gap-2 rounded-lg border border-borde px-4 text-sm font-semibold"><Download size={16} /> Plantilla</button>
         <label className="flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-marca px-4 text-sm font-semibold text-white"><Upload size={16} /> Elegir archivo
           <input type="file" accept={ACEPTA} className="sr-only" onChange={(e) => e.target.files?.[0] && leer(e.target.files[0])} /></label>
+        </div>
       </div>
       {prev && (
         <div className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-borde p-3 text-sm">
