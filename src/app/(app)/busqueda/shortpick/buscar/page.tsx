@@ -15,7 +15,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<{
   if (semana) q = q.eq("semana", semana);
   const { data } = await q;
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-3">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-3 lg:max-w-6xl">
       <div className="flex flex-wrap items-end justify-between gap-2"><h1 className="text-xl font-extrabold">Búsqueda de shortpick</h1><FiltroSemana semanas={semanas} actual={semana} /></div>
       {!data?.length ? <p className="rounded-xl bg-tarjeta p-6 text-sm text-suave">✓ No hay líneas pendientes de búsqueda.</p> : <BuscarShortpick lineas={data} />}
     </div>

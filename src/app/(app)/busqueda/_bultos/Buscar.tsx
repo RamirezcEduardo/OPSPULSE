@@ -102,6 +102,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
         </div>
       </details>
       <p className="text-xs text-suave">{filtrados.length} bultos pendientes · más antiguos primero</p>
+      <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
       {filtrados.slice(0, 200).map((b) => (
         <button key={b.id} onClick={() => abrir(b)} className="flex flex-col gap-1 rounded-xl bg-tarjeta p-4 text-left active:scale-[.99]">
           <div className="flex items-center justify-between gap-2">
@@ -121,6 +122,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
           </div>
           <span className="text-xs text-suave">{b.supervisor ? `Sup. ${b.supervisor}` : "Sin supervisor"} · pend. {fmtNum(b.unidades_pendientes)} und · {fmtSoles(Number(b.valor_pendiente))} {b.estado === "parcial" ? "· PARCIAL" : ""} {b.alerta ? `· ${b.alerta}` : ""}</span>
         </button>))}
+      </div>
     </div>
   );
 }

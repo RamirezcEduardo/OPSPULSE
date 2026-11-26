@@ -15,7 +15,7 @@ export async function BuscarBultosPage({ clas, titulo, semana }: { clas: "perdid
   const { data: us } = await supabase.from("bulto").select("usuario_recepcion,usuario_causo").limit(5000);
   const usuarios = [...new Set((us ?? []).flatMap((u) => [u.usuario_recepcion, u.usuario_causo]).filter(Boolean) as string[])].sort();
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-3">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-3 lg:max-w-6xl">
       <div className="flex flex-wrap items-end justify-between gap-2"><h1 className="text-xl font-extrabold">{titulo}</h1><FiltroSemana semanas={semanas} actual={semana} /></div>
       {!data?.length ? <p className="rounded-xl bg-tarjeta p-6 text-sm text-suave">✓ No hay bultos pendientes.</p> : <BuscarBultos clas={clas} bultos={data} supervisores={(par?.valor as string[]) ?? []} usuarios={usuarios} />}
     </div>
