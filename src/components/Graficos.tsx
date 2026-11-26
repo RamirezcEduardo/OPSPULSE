@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { fmtNum } from "@/lib/formato";
 
-export function Barras({ titulo, datos, fmt = fmtNum, color, max: maxFijo, leyenda }: { titulo: string; datos: [string, number][]; fmt?: (n: number) => string; color?: (v: number) => string; max?: number; leyenda?: React.ReactNode }) {
+export function Barras({ titulo, datos, fmt = fmtNum, color, max: maxFijo, leyenda, enlace }: { titulo: string; datos: [string, number][]; fmt?: (n: number) => string; color?: (v: number) => string; max?: number; leyenda?: React.ReactNode; enlace?: (k: string) => string }) {
   const max = maxFijo ?? Math.max(1, ...datos.map(([, v]) => Math.abs(v)));
   return (
     <section className="rounded-xl bg-tarjeta p-5">
@@ -8,7 +9,7 @@ export function Barras({ titulo, datos, fmt = fmtNum, color, max: maxFijo, leyen
       {!datos.length ? <p className="text-sm text-suave">Sin datos.</p> : (
         <ul className="flex flex-col gap-2.5">{datos.map(([k, v]) => (
           <li key={k} title={`${k}: ${fmt(v)}`} className="grid grid-cols-[minmax(0,11rem)_1fr_auto] items-center gap-3 text-sm">
-            <span className="truncate text-suave">{k}</span>
+            {enlace ? <Link href={enlace(k)} className="truncate text-marca underline-offset-2 hover:underline">{k}</Link> : <span className="truncate text-suave">{k}</span>}
             <span className={`h-3.5 rounded-r ${color ? color(v) : "bg-texto/70 hover:bg-marca"}`} style={{ width: `${(Math.abs(v) / max) * 100}%` }} />
             <span className="tabular-nums">{fmt(v)}</span>
           </li>))}</ul>)}

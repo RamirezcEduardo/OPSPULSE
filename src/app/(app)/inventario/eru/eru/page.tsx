@@ -4,7 +4,7 @@ import { Barras, Kpis } from "@/components/Graficos";
 import { Lineas } from "@/components/Lineas";
 
 export const dynamic = "force-dynamic";
-type R = { mes: string; dia: string; semana: string; ubi: string | null; area: string | null; subarea: string | null; contadas: number; con_error: number };
+type R = { mes: string; dia: string; semana: string; ubi: string | null; area: string | null; subarea: string | null; pasillo: string | null; nivel: string | null; contadas: number; con_error: number };
 
 const pct = (c: number, e: number) => (c ? 1 - e / c : 0);
 const fp = (x: number) => `${(x * 100).toFixed(1)}%`;
@@ -22,7 +22,7 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
   const mes = sp.mes ?? "";
   const todo: R[] = [];
   for (let d = 0; meses.length; d += 1000) {
-    let q0 = s.from("eru_resumen").select("mes,dia,semana,ubi,area,subarea,contadas,con_error").order("id").range(d, d + 999);
+    let q0 = s.from("eru_resumen").select("mes,dia,semana,ubi,area,subarea,pasillo,nivel,contadas,con_error").order("id").range(d, d + 999);
     if (mes) q0 = q0.eq("mes", mes);
     const { data } = await q0;
     todo.push(...((data ?? []) as R[])); if (!data || data.length < 1000) break;
@@ -98,10 +98,29 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
           <Lineas titulo="ERU por semana" etiquetas datos={serie((x) => x.semana)} series={["ERU"]} />
           <Lineas titulo="ERU por día" datos={serie((x) => x.dia, (d) => `${d.slice(8)}/${d.slice(5, 7)}`)} series={["ERU"]} min={0} />
           <Barras titulo="Pérdida neta por producto (top 15)" datos={perdida} />
-          <Barras titulo="ERU por área" max={100} datos={eruPor(r.filter((x) => x.area), (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n.toFixed(1)}%`} color={semaforo}
+          <Barras titulo="ERU por área · toca un área para ver su detalle" enlace={(k) => `?${new URLSearchParams({ ...(mes ? { mes } : {}), area: k })}`} max={100} datos={eruPor(r.filter((x) => x.area), (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n.toFixed(1)}%`} color={semaforo}
             leyenda={<><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-red-600" />Menor a 95%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-amber-400" />Entre 95% y 98%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-green-600" />Desde 98%</span></>} />
           <Barras titulo="Productos con más incidencias ERU (top 15)" datos={top.map((x) => [x.d, x.n] as [string, number])} color={() => "bg-red-600"} />
         </div>
+        {sp.area && (() => {
+          const mz = /^MEZZ/i.test(sp.area);
+          const etiqueta = (n: string | null) => (!n ? "Sin nivel" : mz && /^\d+$/.test(n) ? `Piso ${Math.floor(Number(n) / 10)}` : `Nivel ${n}`);
+          const conNivel = r.filter((x) => x.nivel || x.pasillo);
+          return (
+            <section className="rounded-xl bg-tarjeta p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-semibold text-marca">Detalle de {sp.area}</h2>
+                <a href={`?${new URLSearchParams(mes ? { mes } : {})}`} className="text-sm text-suave underline">Quitar filtro de área</a>
+              </div>
+              {!conNivel.length ? <p className="text-sm text-suave">Este mes aún no tiene detalle por pasillo y nivel. Vuelve a cargar el archivo ERU del mes para verlo.</p> : (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <Barras titulo={mz ? "ERU por piso" : "ERU por nivel del rack"} max={100} color={semaforo} fmt={(n) => `${n.toFixed(1)}%`}
+                    datos={eruPor(conNivel, (x) => etiqueta(x.nivel)).sort((a, b) => a[0].localeCompare(b[0], "es", { numeric: true }))} />
+                  <Barras titulo="ERU por pasillo (más bajos primero)" max={100} color={semaforo} fmt={(n) => `${n.toFixed(1)}%`}
+                    datos={eruPor(conNivel, (x) => (x.pasillo ? `Pasillo ${x.pasillo}` : "Sin pasillo")).sort((a, b) => a[1] - b[1]).slice(0, 20)} />
+                </div>)}
+            </section>);
+        })()}
         <section className="rounded-xl bg-tarjeta p-5">
           <h2 className="mb-3 font-semibold">Productos con más incidencias <span className="text-xs font-normal text-suave">(días con error de ubicación, sin reservas) · según filtros</span></h2>
           <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">

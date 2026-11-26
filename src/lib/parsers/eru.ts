@@ -36,19 +36,19 @@ export function resumirEru(filas: Record<string, string>[]) {
   del.filter((x) => x.grupo === "AJUSTE").forEach((x) => { const k = `${x.dia}|${x.ubic}|${x.sku}`; neto.set(k, (neto.get(k) ?? 0) + x.un); });
 
   // Llaves (día + ubicación): error si algún ajuste queda con diferencia
-  const llaves = new Map<string, { dia: string; ubi: string | null; area: string | null; sub: string | null; error: number }>();
+  const llaves = new Map<string, { dia: string; ubi: string | null; area: string | null; sub: string | null; pas: string | null; niv: string | null; error: number }>();
   for (const x of del) {
     const sinNeteo = SIN_NETEO.test((x.area ?? "").toUpperCase());
     const err = x.grupo !== "AJUSTE" ? 0 : (sinNeteo ? x.un !== 0 : (neto.get(`${x.dia}|${x.ubic}|${x.sku}`) ?? 0) !== 0) ? 1 : 0;
     const k = `${x.dia}|${x.ubic}`;
     const l = llaves.get(k);
-    if (!l) llaves.set(k, { dia: x.dia!, ubi: x.ubi, area: x.area, sub: x.sub, error: err });
+    if (!l) { const p = x.ubic.toUpperCase().split("-"); const virt = /^(XX|SIN)/.test(p[0]) || p.length < 4; llaves.set(k, { dia: x.dia!, ubi: x.ubi, area: x.area, sub: x.sub, pas: virt ? null : p[1] ?? null, niv: virt ? null : p[3] ?? null, error: err }); }
     else if (err) l.error = 1;
   }
-  const res = new Map<string, { mes: string; dia: string; semana: string; ubi: string | null; area: string | null; subarea: string | null; contadas: number; con_error: number }>();
+  const res = new Map<string, { mes: string; dia: string; semana: string; ubi: string | null; area: string | null; subarea: string | null; pasillo: string | null; nivel: string | null; contadas: number; con_error: number }>();
   for (const l of llaves.values()) {
-    const k = [l.dia, l.ubi, l.area, l.sub].join("|");
-    const v = res.get(k) ?? { mes, dia: l.dia, semana: semana(l.dia), ubi: l.ubi, area: l.area, subarea: l.sub, contadas: 0, con_error: 0 };
+    const k = [l.dia, l.ubi, l.area, l.sub, l.pas, l.niv].join("|");
+    const v = res.get(k) ?? { mes, dia: l.dia, semana: semana(l.dia), ubi: l.ubi, area: l.area, subarea: l.sub, pasillo: l.pas, nivel: l.niv, contadas: 0, con_error: 0 };
     v.contadas++; v.con_error += l.error; res.set(k, v);
   }
 
