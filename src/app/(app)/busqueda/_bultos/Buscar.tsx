@@ -1,5 +1,6 @@
 "use client";
 
+import { arreglarTexto } from "@/lib/parsers/csv";
 import { useMemo, useState, useTransition } from "react";
 import { Search } from "lucide-react";
 import { Fotos } from "@/components/Fotos";
@@ -99,8 +100,11 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${b.dias_demora > 15 ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-900"}`}>{b.dias_demora} días</span>
           </div>
           <span className="truncate text-sm">{b.cod_alternat} · {b.descripcion}</span>
-          <span className="text-xs font-semibold">{String(b.diagnostico).split(" –")[0]} · {b.familia_producto}</span>
-          {b.ubicacion_envio && <span className="text-xs">📍 <span className="font-mono">{b.ubicacion_envio}</span>{b.nro_grupo ? ` · Grupo ${b.nro_grupo}` : ""}</span>}
+          <span className="text-xs font-semibold">{String(b.diagnostico).split(" –")[0]} · {arreglarTexto(String(b.familia_producto ?? ""))}</span>
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            <span className={`rounded-full px-2 py-0.5 font-semibold ${b.nro_grupo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.nro_grupo ? `Grupo ${b.nro_grupo}` : "Sin grupo"}</span>
+            <span className={`rounded-full px-2 py-0.5 font-semibold ${b.ubicacion_envio ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.ubicacion_envio ? <>📍 <span className="font-mono">{b.ubicacion_envio}</span></> : "Sin ubicación reportada"}</span>
+          </div>
           <span className="text-xs text-suave">{b.supervisor ? `Sup. ${b.supervisor}` : "Sin supervisor"} · pend. {fmtNum(b.unidades_pendientes)} und · {fmtSoles(Number(b.valor_pendiente))} {b.estado === "parcial" ? "· PARCIAL" : ""} {b.alerta ? `· ${b.alerta}` : ""}</span>
         </button>))}
     </div>
