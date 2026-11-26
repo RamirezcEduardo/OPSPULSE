@@ -100,7 +100,12 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${b.dias_demora > 15 ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-900"}`}>{b.dias_demora} días</span>
           </div>
           <span className="truncate text-sm">{b.cod_alternat} · {b.descripcion}</span>
-          <span className="text-xs font-semibold">{String(b.diagnostico).split(" –")[0]} · {arreglarTexto(String(b.familia_producto ?? ""))}</span>
+          <span className="text-xs font-semibold">{arreglarTexto(String(b.familia_producto ?? ""))}</span>
+          {(() => { const c = Number(b.caja_estandar) || 0, m = Number(b.masters) || 0, u = Number(b.unidades_sueltas) || 0;
+            if (c <= 1) return <span className="rounded-lg bg-fondo px-2 py-1 text-xs text-suave">Sin master pack registrado para este SKU</span>;
+            const txt = `${m ? `${m} master${m > 1 ? "s" : ""} de ${c} und` : ""}${m && u ? " + " : ""}${u ? `${u} und suelta${u > 1 ? "s" : ""}` : ""}`;
+            const [diag, col] = m && !u ? ["Posible error de REABASTO", "bg-orange-100 text-orange-900"] : !m ? ["Posible error de PICKING", "bg-blue-100 text-blue-900"] : ["Mixto: REABASTO + PICKING", "bg-purple-100 text-purple-900"];
+            return <span className={`rounded-lg px-2 py-1 text-xs font-semibold ${col}`}>{txt} → {diag}</span>; })()}
           <div className="flex flex-wrap gap-1.5 text-xs">
             <span className={`rounded-full px-2 py-0.5 font-semibold ${b.nro_grupo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.nro_grupo ? `Grupo ${b.nro_grupo}` : "Sin grupo"}</span>
             <span className={`rounded-full px-2 py-0.5 font-semibold ${b.ubicacion_envio ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.ubicacion_envio ? <>📍 <span className="font-mono">{b.ubicacion_envio}</span></> : "Sin ubicación reportada"}</span>
