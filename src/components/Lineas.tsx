@@ -34,7 +34,7 @@ export function Lineas({ titulo, datos, series, etiquetas = false, min = 40, des
 }
 
 /** Barras faltante (rojo) / sobrante (gris) con línea de neto, en S/. */
-export function Combo({ titulo, datos, alto = 300 }: { titulo: string; datos: { x: string; falt: number; sob: number; neto: number }[]; alto?: number }) {
+export function Combo({ titulo, datos, alto = 300, nombres = ["Faltante S/", "Sobrante S/", "Neto S/"] }: { titulo: string; datos: { x: string; falt: number; sob: number; neto: number }[]; alto?: number; nombres?: [string, string, string] }) {
   const s = (v: number) => `S/ ${Math.round(v).toLocaleString("es-PE")}`;
   return (
     <section className="rounded-xl bg-tarjeta p-5">
@@ -49,9 +49,9 @@ export function Combo({ titulo, datos, alto = 300 }: { titulo: string; datos: { 
               <Tooltip formatter={(v: number) => s(v)} contentStyle={{ fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.4} />
-              <Bar dataKey="falt" name="Faltante S/" fill="#E11D2E" isAnimationActive={false} />
-              <Bar dataKey="sob" name="Sobrante S/" fill="#A3A3A3" isAnimationActive={false} />
-              <Line dataKey="neto" name="Neto S/" stroke="#111827" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false}>
+              <Bar dataKey="falt" name={nombres[0]} fill="#E11D2E" isAnimationActive={false} />
+              <Bar dataKey="sob" name={nombres[1]} fill="#A3A3A3" isAnimationActive={false} />
+              <Line dataKey="neto" name={nombres[2]} stroke="#111827" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false}>
                 <LabelList dataKey="neto" position="top" fontSize={10} formatter={(v: number) => s(v)} />
               </Line>
             </ComposedChart>
