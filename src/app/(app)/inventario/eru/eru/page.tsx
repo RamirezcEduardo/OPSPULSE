@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { fmtNum } from "@/lib/formato";
 import { Barras, Kpis } from "@/components/Graficos";
@@ -74,7 +75,7 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
               const bg = modo !== "cont" || !n || tot || z === "RESERVA" || sub ? undefined : n < 50 ? "rgba(239,68,68,0.15)" : `rgba(59,130,246,${(0.45 * n) / maxCont})`;
               return <td key={c} className="px-2 py-1.5 text-right tabular-nums" style={{ background: bg }}>{val(a)}</td>; })}
             {total && <td className="px-2 py-1.5 text-right tabular-nums">{val(filas)}</td>}</tr>;
-          const nombre = tot || z === "RESERVA" ? z : <a href={qs(abierta ? undefined : z)} className="text-marca hover:underline">{abierta ? "▾" : "▸"} {z}</a>;
+          const nombre = tot || z === "RESERVA" ? z : <Link href={qs(abierta ? undefined : z)} scroll={false} className="text-marca hover:underline">{abierta ? "▾" : "▸"} {z}</Link>;
           return [fila(nombre, rz, z), ...(abierta && !subs.length ? [<tr key={z + "-vacio"}><td colSpan={cols.length + 2} className="py-1.5 pl-6 text-xs text-suave">Sin detalle por {mz ? "piso" : "nivel"}: vuelve a cargar el ERU del mes.</td></tr>] : []),
             ...subs.map((n) => fila(n, rz.filter((x) => etq(x.nivel) === n), z + n, true))]; })}</tbody></table></div>
     </section>); };
