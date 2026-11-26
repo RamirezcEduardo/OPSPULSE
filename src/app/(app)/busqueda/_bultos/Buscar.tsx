@@ -65,7 +65,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
           🔎 {sel.diagnostico}{sel.caja_estandar > 1 ? ` · caja de ${sel.caja_estandar} und` : ""}{sel.masters ? ` · ${sel.masters} master${sel.masters > 1 ? "s" : ""}` : ""}{sel.unidades_sueltas ? ` + ${sel.unidades_sueltas} und` : ""}</p>
         <p className="text-sm">Pendiente <b>{fmtNum(sel.unidades_pendientes)} und</b> · {fmtSoles(Number(sel.valor_pendiente))}</p>
       </div>
-      {sel.cod_alternat && <Contraparte key={sel.id} sku={String(sel.cod_alternat)} pendientes={Number(sel.unidades_pendientes)} desde={`${new Date().getFullYear()}-${String(Math.floor(new Date().getMonth() / 3) * 3 + 1).padStart(2, "0")}-01`} />}
+      {sel.cod_alternat && <Contraparte key={sel.id} referencia={sel.ubicacion_envio || sel.ubicacion} sku={String(sel.cod_alternat)} pendientes={Number(sel.unidades_pendientes)} desde={`${new Date().getFullYear()}-${String(Math.floor(new Date().getMonth() / 3) * 3 + 1).padStart(2, "0")}-01`} />}
       <section className="flex flex-col gap-3 rounded-xl border border-borde p-3">
         <p className="text-sm font-semibold">Responsables</p>
         <label className="flex flex-col gap-1 text-sm">Supervisor a cargo
