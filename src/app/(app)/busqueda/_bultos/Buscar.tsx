@@ -12,7 +12,7 @@ import { asignarResponsables, registrarRecuperacion } from "./actions";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type B = Record<string, any>;
 
-export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "perdidos" | "sin_ubicacion"; bultos: B[]; supervisores: string[]; usuarios: string[] }) {
+export function BuscarBultos({ clas, bultos, supervisores, usuarios, semana }: { semana?: string; clas: "perdidos" | "sin_ubicacion"; bultos: B[]; supervisores: string[]; usuarios: string[] }) {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<B | null>(null);
   const [lista, setLista] = useState(bultos);
@@ -118,6 +118,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
             return <span className={`rounded-lg px-2 py-1 text-xs font-semibold ${col}`}>{txt} → {diag}</span>; })()}
           <div className="flex flex-wrap gap-1.5 text-xs">
             {b.semana_calc && <span className="rounded-full bg-grafito px-2 py-0.5 font-semibold text-white">{String(b.semana_calc)}</span>}
+            {((semana && String(b.semana_calc) < semana) || b.estado === "parcial") && <span className="rounded-full bg-amber-200 px-2 py-0.5 font-semibold text-amber-900">{b.estado === "parcial" ? `Arrastre · ${fmtNum(b.unidades_recuperadas)} ubicadas, faltan ${fmtNum(b.unidades_pendientes)}` : "Arrastre de semana anterior"}</span>}
             {(clas !== "perdidos" || b.nro_grupo) && <span className={`rounded-full px-2 py-0.5 font-semibold ${b.nro_grupo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.nro_grupo ? `Grupo ${b.nro_grupo}` : "Sin grupo"}</span>}
             <span className={`rounded-full px-2 py-0.5 font-semibold ${b.ubicacion_envio ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.ubicacion_envio ? <>📍 <span className="font-mono">{b.ubicacion_envio}</span></> : "Sin ubicación reportada"}</span>
           </div>
