@@ -94,11 +94,11 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
         <Search size={18} className="text-suave" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar LPN, SKU, descripción o ubicación" className="h-full flex-1 bg-transparent outline-none" aria-label="Buscar" />
       </label>
       <details className="group rounded-xl">
-        <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl bg-tarjeta px-4 py-2.5 text-sm font-semibold">Listas para copiar (LPN y grupos)
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl bg-tarjeta px-4 py-2.5 text-sm font-semibold">{clas === "perdidos" ? "Lista de LPN para copiar" : "Listas para copiar (LPN y grupos)"}
           <span className="text-xs text-suave"><span className="group-open:hidden">Mostrar ▾</span><span className="hidden group-open:inline">Ocultar ▴</span></span></summary>
         <div className="mt-2 flex flex-col gap-2">
-          <CopiarLista titulo="LPN sin grupo para copiar" valores={filtrados.filter((b) => !b.nro_grupo).map((b) => b.nro_lpn)} />
-          <CopiarLista titulo="Nro de grupo sin ubicación reportada para copiar" valores={[...new Set(filtrados.filter((b) => b.nro_grupo && !b.ubicacion_envio).map((b) => String(b.nro_grupo)))]} />
+          {clas === "perdidos" ? <CopiarLista titulo="LPN pendientes para copiar (seguimiento en sistema)" valores={filtrados.map((b) => b.nro_lpn)} /> : <CopiarLista titulo="LPN sin grupo para copiar" valores={filtrados.filter((b) => !b.nro_grupo).map((b) => b.nro_lpn)} />}
+          {clas !== "perdidos" && <CopiarLista titulo="Nro de grupo sin ubicación reportada para copiar" valores={[...new Set(filtrados.filter((b) => b.nro_grupo && !b.ubicacion_envio).map((b) => String(b.nro_grupo)))]} />}
         </div>
       </details>
       <p className="text-xs text-suave">{filtrados.length} bultos pendientes · más antiguos primero</p>
@@ -116,7 +116,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
             const [diag, col] = m && !u ? ["Posible error de REABASTO", "bg-orange-100 text-orange-900"] : !m ? ["Posible error de PICKING", "bg-blue-100 text-blue-900"] : ["Mixto: REABASTO + PICKING", "bg-purple-100 text-purple-900"];
             return <span className={`rounded-lg px-2 py-1 text-xs font-semibold ${col}`}>{txt} → {diag}</span>; })()}
           <div className="flex flex-wrap gap-1.5 text-xs">
-            <span className={`rounded-full px-2 py-0.5 font-semibold ${b.nro_grupo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.nro_grupo ? `Grupo ${b.nro_grupo}` : "Sin grupo"}</span>
+            {(clas !== "perdidos" || b.nro_grupo) && <span className={`rounded-full px-2 py-0.5 font-semibold ${b.nro_grupo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.nro_grupo ? `Grupo ${b.nro_grupo}` : "Sin grupo"}</span>}
             <span className={`rounded-full px-2 py-0.5 font-semibold ${b.ubicacion_envio ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.ubicacion_envio ? <>📍 <span className="font-mono">{b.ubicacion_envio}</span></> : "Sin ubicación reportada"}</span>
           </div>
           <span className="text-xs text-suave">{b.supervisor ? `Sup. ${b.supervisor}` : "Sin supervisor"} · pend. {fmtNum(b.unidades_pendientes)} und · {fmtSoles(Number(b.valor_pendiente))} {b.estado === "parcial" ? "· PARCIAL" : ""} {b.alerta ? `· ${b.alerta}` : ""}</span>
