@@ -93,8 +93,14 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
       <label className="flex h-12 items-center gap-2 rounded-xl border border-borde bg-tarjeta px-3">
         <Search size={18} className="text-suave" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar LPN, SKU, descripción o ubicación" className="h-full flex-1 bg-transparent outline-none" aria-label="Buscar" />
       </label>
-      <CopiarLista titulo="LPN sin grupo para copiar" valores={filtrados.filter((b) => !b.nro_grupo).map((b) => b.nro_lpn)} />
-      <CopiarLista titulo="Nro de grupo sin ubicación reportada para copiar" valores={[...new Set(filtrados.filter((b) => b.nro_grupo && !b.ubicacion_envio).map((b) => String(b.nro_grupo)))]} />
+      <details className="group rounded-xl">
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl bg-tarjeta px-4 py-2.5 text-sm font-semibold">Listas para copiar (LPN y grupos)
+          <span className="text-xs text-suave"><span className="group-open:hidden">Mostrar ▾</span><span className="hidden group-open:inline">Ocultar ▴</span></span></summary>
+        <div className="mt-2 flex flex-col gap-2">
+          <CopiarLista titulo="LPN sin grupo para copiar" valores={filtrados.filter((b) => !b.nro_grupo).map((b) => b.nro_lpn)} />
+          <CopiarLista titulo="Nro de grupo sin ubicación reportada para copiar" valores={[...new Set(filtrados.filter((b) => b.nro_grupo && !b.ubicacion_envio).map((b) => String(b.nro_grupo)))]} />
+        </div>
+      </details>
       <p className="text-xs text-suave">{filtrados.length} bultos pendientes · más antiguos primero</p>
       {filtrados.slice(0, 200).map((b) => (
         <button key={b.id} onClick={() => abrir(b)} className="flex flex-col gap-1 rounded-xl bg-tarjeta p-4 text-left active:scale-[.99]">
