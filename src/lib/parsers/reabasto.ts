@@ -84,7 +84,7 @@ export function mapearActivo(r: Record<string, string>) {
   return {
     fecha: f ? f.slice(0, 10) : new Date().toLocaleDateString("en-CA", { timeZone: "America/Lima" }),
     auditor_asignado: null as string | null, // lo asigna quien carga, desde la app
-    area: normArea(r["AREA"] || r["ÁREA"]),
+    area: /^MZ(\d)-/i.test((r["ACTIVO"] || r["UBICACION"] || "").trim()) ? `MEZZANINE ${(r["ACTIVO"] || r["UBICACION"] || "").trim().match(/^MZ(\d)/i)![1]}` : normArea(r["AREA"] || r["ÁREA"]),
     usuario_reabasto: r["REABASTECIDO"] || null,
     turno: r["TURNO DE REBASTO"] || r["TURNO DE REABASTO"] || r["TURNO"] || null,
     producto: r["PRODUCTO"] || null,
