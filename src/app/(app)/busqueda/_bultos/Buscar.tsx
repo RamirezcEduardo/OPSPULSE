@@ -117,6 +117,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
             const [diag, col] = m && !u ? ["Posible error de REABASTO", "bg-orange-100 text-orange-900"] : !m ? ["Posible error de PICKING", "bg-blue-100 text-blue-900"] : ["Mixto: REABASTO + PICKING", "bg-purple-100 text-purple-900"];
             return <span className={`rounded-lg px-2 py-1 text-xs font-semibold ${col}`}>{txt} → {diag}</span>; })()}
           <div className="flex flex-wrap gap-1.5 text-xs">
+            {b.semana_calc && <span className="rounded-full bg-grafito px-2 py-0.5 font-semibold text-white">{String(b.semana_calc)}</span>}
             {(clas !== "perdidos" || b.nro_grupo) && <span className={`rounded-full px-2 py-0.5 font-semibold ${b.nro_grupo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.nro_grupo ? `Grupo ${b.nro_grupo}` : "Sin grupo"}</span>}
             <span className={`rounded-full px-2 py-0.5 font-semibold ${b.ubicacion_envio ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{b.ubicacion_envio ? <>📍 <span className="font-mono">{b.ubicacion_envio}</span></> : "Sin ubicación reportada"}</span>
           </div>

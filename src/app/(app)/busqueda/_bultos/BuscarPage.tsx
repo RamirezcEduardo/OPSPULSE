@@ -7,7 +7,7 @@ export async function BuscarBultosPage({ clas, titulo, semana }: { clas: "perdid
   const { data: ss } = await supabase.from("v_bulto").select("semana_calc").eq("clasificacion", clas).in("estado", ["pendiente", "parcial"]).limit(20000);
   const semanas = [...new Set((ss ?? []).map((x) => x.semana_calc as string).filter(Boolean))].sort().reverse();
   let q = supabase.from("v_bulto")
-    .select("id,fecha_creacion,diagnostico,masters,unidades_sueltas,caja_estandar,familia_producto,nro_lpn,nro_grupo,ubicacion_envio,otras_ubicaciones,cod_alternat,descripcion,ubicacion,usuario_causo,cantidad_actual,unidades_recuperadas,unidades_pendientes,val_tot,valor_total,valor_pendiente,estado,dias_demora,alerta,supervisor")
+    .select("id,fecha_creacion,semana_calc,diagnostico,masters,unidades_sueltas,caja_estandar,familia_producto,nro_lpn,nro_grupo,ubicacion_envio,otras_ubicaciones,cod_alternat,descripcion,ubicacion,usuario_causo,cantidad_actual,unidades_recuperadas,unidades_pendientes,val_tot,valor_total,valor_pendiente,estado,dias_demora,alerta,supervisor")
     .eq("clasificacion", clas).in("estado", ["pendiente", "parcial"]).order("dias_demora", { ascending: false }).limit(1000);
   if (semana) q = q.eq("semana_calc", semana);
   const { data } = await q;
