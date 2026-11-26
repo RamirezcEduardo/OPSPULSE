@@ -7,7 +7,7 @@ export const ORDEN: Record<Nivel, number> = { ninguno: 0, ver: 1, registrar: 2, 
 export const GRUPOS: { titulo: string; items: { href: string; label: string }[] }[] = [
   { titulo: "Control de inventario", items: [
     { href: "/inventario/bolsa", label: "Bolsa de inventario" },
-    { href: "/inventario/cruces", label: "Posibles cruces de bolsa" },
+    { href: "/inventario/cruces", label: "Consultor de cruces" },
     { href: "/inventario/vas", label: "VAS" },
     { href: "/inventario/merma", label: "Merma" },
     { href: "/inventario/5s", label: "Auditoría 5S" },

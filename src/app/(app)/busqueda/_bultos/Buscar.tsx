@@ -5,6 +5,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Search } from "lucide-react";
 import { Fotos } from "@/components/Fotos";
 import { CopiarLista } from "@/components/CopiarLista";
+import { Contraparte } from "@/components/Contraparte";
 import { fmtNum, fmtSoles } from "@/lib/formato";
 import { asignarResponsables, registrarRecuperacion } from "./actions";
 
@@ -64,6 +65,7 @@ export function BuscarBultos({ clas, bultos, supervisores, usuarios }: { clas: "
           🔎 {sel.diagnostico}{sel.caja_estandar > 1 ? ` · caja de ${sel.caja_estandar} und` : ""}{sel.masters ? ` · ${sel.masters} master${sel.masters > 1 ? "s" : ""}` : ""}{sel.unidades_sueltas ? ` + ${sel.unidades_sueltas} und` : ""}</p>
         <p className="text-sm">Pendiente <b>{fmtNum(sel.unidades_pendientes)} und</b> · {fmtSoles(Number(sel.valor_pendiente))}</p>
       </div>
+      {sel.cod_alternat && <Contraparte key={sel.id} sku={String(sel.cod_alternat)} pendientes={Number(sel.unidades_pendientes)} desde={sel.fecha_creacion ? String(sel.fecha_creacion).slice(0, 10) : null} />}
       <section className="flex flex-col gap-3 rounded-xl border border-borde p-3">
         <p className="text-sm font-semibold">Responsables</p>
         <label className="flex flex-col gap-1 text-sm">Supervisor a cargo
