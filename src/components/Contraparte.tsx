@@ -15,13 +15,20 @@ export function Contraparte({ sku, pendientes, desde, auto = false }: { sku: str
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (auto) consultar(); }, []);
   const cons = (movs ?? []).filter((m) => m.gestion === "CONSIDERAR");
-  const sob = cons.filter((m) => Number(m.un) > 0), fal = cons.filter((m) => Number(m.un) < 0);
-  const uS = sob.reduce((a, m) => a + Number(m.un), 0), uF = fal.reduce((a, m) => a + Number(m.un), 0);
-  const neto = uS + uF;
+  const neto = cons.reduce((a, m) => a + Number(m.un), 0);
+  // Saldo por ubicación (o por grupo si no tiene ubicación): lo que queda en positivo después de netear es la posible contraparte
+  const saldos = new Map<string, { k: string; un: number; fecha: string; grupo: string | null; area: string | null }>();
+  for (const m of cons) {
+    const k = m.ubicacion || `Grupo ${m.nro_grupo ?? "—"}`;
+    const v = saldos.get(k) ?? { k, un: 0, fecha: m.fecha, grupo: m.nro_grupo, area: m.area };
+    v.un += Number(m.un); if (m.fecha > v.fecha) { v.fecha = m.fecha; v.grupo = m.nro_grupo; }
+    saldos.set(k, v);
+  }
+  const positivos = [...saldos.values()].filter((x) => x.un > 0).sort((a, b) => b.un - a.un);
   const veredicto = movs === null ? null : !cons.length ? ["Sin movimientos de este SKU en la bolsa en el periodo.", "bg-fondo text-suave"]
-    : pendientes && uS >= pendientes ? [`Posible cruce: hay sobrantes por ${fmtNum(uS)} und del mismo SKU (pendiente ${fmtNum(pendientes)} und). Revisa si ya fue ajustado en bolsa.`, "bg-green-100 text-green-900"]
-    : uS > 0 ? [`Sobrantes parciales: ${fmtNum(uS)} und del mismo SKU. Neto del SKU en bolsa: ${fmtNum(neto)} und.`, "bg-amber-100 text-amber-900"]
-    : [`Solo faltantes (${fmtNum(uF)} und): no hay contraparte en bolsa.`, "bg-red-100 text-red-900"];
+    : neto > 0 && pendientes && neto >= pendientes ? [`Posible cruce: el SKU tiene saldo POSITIVO de +${fmtNum(neto)} und en bolsa (neteado), cubre lo pendiente (${fmtNum(pendientes)} und).`, "bg-green-100 text-green-900"]
+    : neto > 0 ? [`Saldo positivo de +${fmtNum(neto)} und en bolsa (neteado)${pendientes ? `; cubre parte de lo pendiente (${fmtNum(pendientes)} und)` : ""}.`, "bg-amber-100 text-amber-900"]
+    : [`El SKU está neteado o en negativo (${fmtNum(neto)} und): no hay contraparte positiva en bolsa.`, "bg-red-100 text-red-900"];
   return (
     <section className="flex flex-col gap-3 rounded-xl border border-borde p-3">
       <div className="flex flex-wrap items-end gap-2">
@@ -31,6 +38,12 @@ export function Contraparte({ sku, pendientes, desde, auto = false }: { sku: str
       </div>
       {err && <p className="text-sm text-marca">{err}</p>}
       {veredicto && <p className={`rounded-lg p-2 text-sm font-semibold ${veredicto[1]}`}>{veredicto[0]}</p>}
+      {neto > 0 && positivos.length > 0 && (
+        <div className="rounded-lg border border-green-300 p-2 text-sm">
+          <p className="mb-1 font-semibold text-green-800">Dónde está el positivo (saldo después de netear):</p>
+          <ul className="flex flex-col gap-1">{positivos.slice(0, 8).map((x) => (
+            <li key={x.k} className="flex flex-wrap justify-between gap-2"><span><b className="font-mono">{x.k}</b> · {x.area ?? ""}{x.grupo && !x.k.startsWith("Grupo") ? ` · grupo ${x.grupo}` : ""} · último {fmtFecha(x.fecha)}</span><b className="text-green-700">+{fmtNum(x.un)} und</b></li>))}</ul>
+        </div>)}
       {movs && movs.length > 0 && (
         <div className="max-h-80 overflow-auto"><table className="w-full min-w-[640px] text-xs">
           <thead className="sticky top-0 bg-grafito text-left text-white"><tr>{["Fecha", "Grupo", "Ubicación", "Área", "Und", "S/", "Motivo", "Gestión"].map((h) => <th key={h} className="px-2 py-1.5 font-semibold">{h}</th>)}</tr></thead>
