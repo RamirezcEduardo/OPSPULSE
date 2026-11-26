@@ -23,6 +23,7 @@ export const GRUPOS: { titulo: string; items: { href: string; label: string }[] 
     { href: "/operaciones/despacho", label: "Auditoría de despacho" },
   ] },
   { titulo: "Control de búsqueda de incidencias", items: [
+    { href: "/busqueda/resumen", label: "Resumen" },
     { href: "/busqueda/perdidos", label: "Perdidos" },
     { href: "/busqueda/sin-ubicacion", label: "Sin ubicación" },
     { href: "/busqueda/shortpick", label: "Shortpick" },
