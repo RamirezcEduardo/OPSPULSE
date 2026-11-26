@@ -31,7 +31,7 @@
 
 ## Estructura de ubicaciones (CD11)
 `ÁREA-PASILLO-BAHÍA-NIVEL[-POSICIÓN]` — ej. `MZ1-01-78-30`: área MZ1, pasillo 01, bahía 78, nivel 30.
-- En Mezzanine (MZ1, MZ2) el nivel es el **piso**; en las demás áreas es el **nivel del rack**.
+- En Mezzanine (MZ1, MZ2) el nivel es el **piso**: 10 = piso 1, 20 = piso 2, 30 = piso 3; en las demás áreas es el **nivel del rack**.
 - La posición (5.º tramo) solo existe en algunas áreas.
 - Ubicaciones virtuales empiezan con `XX-` o `SIN-`.
 - Cercanía para cruces: misma bahía = 3, bahía vecina = 2, mismo pasillo (≤3 bahías) = 1 (`src/lib/ubicacion.ts`).
