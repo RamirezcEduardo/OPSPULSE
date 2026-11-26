@@ -31,7 +31,7 @@ export async function DashboardBultos({ clas, titulo, semana }: { clas: "perdido
         <FiltroSemana semanas={semanas} actual={semana} />
       </header>
       {puedeCargar && <CargarBultos clas={clas} />}
-      {puedeCargar && <CargasVinculo lpns={(todos ?? []).map((x) => x.nro_lpn)} grupos={[...new Set((todos ?? []).map((x) => x.nro_grupo).filter(Boolean) as string[])]} />}
+      {puedeCargar && <CargasVinculo soloUbicacion={clas === "perdidos"} lpns={(todos ?? []).map((x) => x.nro_lpn)} grupos={[...new Set((todos ?? []).map((x) => x.nro_grupo).filter(Boolean) as string[])]} />}
       {error && <p className="rounded-xl bg-tarjeta p-4 text-sm text-marca-oscuro">{error.message}</p>}
       {!r.length ? <p className="rounded-xl bg-tarjeta p-6 text-sm text-suave">Aún no hay bultos cargados.</p> : (<>
         <Kpis items={[
