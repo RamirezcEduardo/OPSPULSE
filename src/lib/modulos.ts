@@ -14,6 +14,7 @@ export const GRUPOS: { titulo: string; items: { href: string; label: string }[] 
     { href: "/inventario/incidencias", label: "Incidencias" },
     { href: "/inventario/shortpick", label: "Evolutivo shortpick" },
     { href: "/inventario/eru", label: "ERU / ERI" },
+    { href: "/inventario/uca", label: "UCA almacén" },
   ] },
   { titulo: "Seguimiento de operaciones", items: [
     { href: "/operaciones/recepcion", label: "Auditoría de recepción" },
