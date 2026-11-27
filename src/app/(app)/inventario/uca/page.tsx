@@ -13,7 +13,7 @@ const pct = (oc: number, pos: number) => (pos ? (oc / pos) * 100 : 0);
 const color = (p: number) => (p >= 85 ? "bg-red-600" : p >= 70 ? "bg-amber-500" : "bg-green-600");
 const txt = (p: number) => (p >= 85 ? "text-red-600" : p >= 70 ? "text-amber-600" : "text-green-700 dark:text-green-400");
 
-export default async function Uca({ searchParams }: { searchParams: Promise<{ area?: string; altura?: string; nivel?: string }> }) {
+export default async function Uca({ searchParams }: { searchParams: Promise<{ area?: string; altura?: string; nivel?: string; vacios?: string }> }) {
   const sp = await searchParams;
   const s = await createClient();
   const { nivel } = await obtenerPermisos();
@@ -22,7 +22,6 @@ export default async function Uca({ searchParams }: { searchParams: Promise<{ ar
   const puede = nivel("/inventario/uca") === "editar";
   const k = d?.kpi ?? { pos: 0, oc: 0, u: 0 };
   const sel = "h-9 rounded-lg border border-borde bg-tarjeta px-2 text-sm text-texto";
-  const th = "px-2 py-2 font-semibold text-right";
   const uca = (o?: number, p?: number) => (p ? <span className={`font-semibold ${txt(pct(o ?? 0, p))}`}>{pct(o ?? 0, p).toFixed(1)}%</span> : <span className="text-suave">—</span>);
   return (
     <div className="flex flex-col gap-5">
@@ -46,27 +45,39 @@ export default async function Uca({ searchParams }: { searchParams: Promise<{ ar
           <Barras titulo="UCA por nivel (%)" max={100} color={color} fmt={(n) => `${n.toFixed(1)}%`} datos={(d.niveles ?? []).map((x) => [`Nivel ${x.k}`, pct(x.oc, x.pos)] as [string, number])} />
         </div>
         {(d.historial?.length ?? 0) > 1 && <Lineas titulo="Evolución de la UCA (%) por corte" min={0} series={["UCA"]} datos={(d.historial ?? []).map((h) => ({ x: `${h.corte.slice(8)}/${h.corte.slice(5, 7)}`, UCA: Math.round(pct(h.oc, h.pos) * 10) / 10 }))} />}
-        <section className="rounded-xl bg-tarjeta p-5">
-          <h2 className="mb-3 font-semibold text-marca">UCA por pasillo y altura</h2>
-          <div className="overflow-x-auto"><table className="w-full min-w-[1000px] text-sm">
-            <thead className="bg-grafito text-white">
-              <tr><th className="px-2 py-1" colSpan={2}></th><th className="px-2 py-1 text-center" colSpan={3}>ALTURA 1.20</th><th className="px-2 py-1 text-center" colSpan={3}>ALTURA 1.80</th><th className="px-2 py-1 text-center" colSpan={5}>TOTAL</th></tr>
-              <tr><th className="px-2 py-2 text-left">Área</th><th className="px-2 py-2 text-left">Pasillo</th>{["Posiciones", "Ocupadas", "UCA", "Posiciones", "Ocupadas", "UCA", "Posiciones", "Ocupadas", "UCA", "Libres", "Unidades"].map((h, i) => <th key={i} className={th}>{h}</th>)}</tr></thead>
-            <tbody>{(d.pasillos ?? []).map((x) => (
-              <tr key={x.k} className="border-b border-borde text-right tabular-nums"><td className="px-2 py-1 text-left">{x.a}</td><td className="px-2 py-1 text-left font-semibold">{x.k}</td>
-                <td className="px-2 py-1">{fmtNum(x.p12 ?? 0)}</td><td className="px-2 py-1">{fmtNum(x.o12 ?? 0)}</td><td className="px-2 py-1">{uca(x.o12, x.p12)}</td>
-                <td className="px-2 py-1">{fmtNum(x.p18 ?? 0)}</td><td className="px-2 py-1">{fmtNum(x.o18 ?? 0)}</td><td className="px-2 py-1">{uca(x.o18, x.p18)}</td>
-                <td className="px-2 py-1 font-semibold">{fmtNum(x.pos)}</td><td className="px-2 py-1">{fmtNum(x.oc)}</td>
-                <td className="px-2 py-1"><span className="inline-flex items-center gap-1.5"><i className="inline-block h-2 w-12 rounded bg-fondo"><i className={`block h-2 rounded ${color(pct(x.oc, x.pos))}`} style={{ width: `${pct(x.oc, x.pos)}%` }} /></i>{uca(x.oc, x.pos)}</span></td>
-                <td className="px-2 py-1 text-green-700">{fmtNum(x.pos - x.oc)}</td><td className="px-2 py-1">{fmtNum(Number(x.u ?? 0))}</td></tr>))}
-              <tr className="bg-fondo text-right font-bold tabular-nums"><td className="px-2 py-1.5 text-left" colSpan={2}>TOTAL</td>
-                {(() => { const P = d.pasillos ?? []; const s = (f: keyof F) => P.reduce((t, x) => t + Number(x[f] ?? 0), 0); return <>
-                  <td className="px-2 py-1.5">{fmtNum(s("p12"))}</td><td className="px-2 py-1.5">{fmtNum(s("o12"))}</td><td className="px-2 py-1.5">{uca(s("o12"), s("p12"))}</td>
-                  <td className="px-2 py-1.5">{fmtNum(s("p18"))}</td><td className="px-2 py-1.5">{fmtNum(s("o18"))}</td><td className="px-2 py-1.5">{uca(s("o18"), s("p18"))}</td>
-                  <td className="px-2 py-1.5">{fmtNum(s("pos"))}</td><td className="px-2 py-1.5">{fmtNum(s("oc"))}</td><td className="px-2 py-1.5">{uca(s("oc"), s("pos"))}</td>
-                  <td className="px-2 py-1.5">{fmtNum(s("pos") - s("oc"))}</td><td className="px-2 py-1.5">{fmtNum(s("u"))}</td></>; })()}</tr>
-            </tbody></table></div>
-        </section>
+        {(() => {
+          const P = d.pasillos ?? [];
+          const vacios = P.filter((x) => !x.oc).length;
+          const ver = sp.vacios === "1" ? P : P.filter((x) => x.oc);
+          const areas = [...new Set(P.map((x) => x.a ?? ""))].sort();
+          const suma = (xs: F[], f: keyof F) => xs.reduce((t, x) => t + Number(x[f] ?? 0), 0);
+          const qs = (v: boolean) => `?${new URLSearchParams({ ...Object.fromEntries(Object.entries(sp).filter(([k2, v2]) => k2 !== "vacios" && v2) as [string, string][]), ...(v ? { vacios: "1" } : {}) })}`;
+          const alt = (o: number, p: number) => !p ? <span className="text-suave">—</span> : (
+            <span className="inline-flex flex-col items-end leading-tight"><span className="tabular-nums">{fmtNum(o)} <span className="text-suave">/ {fmtNum(p)}</span></span>{uca(o, p)}</span>);
+          const barra = (o: number, p: number) => (
+            <span className="flex items-center justify-end gap-2"><i className="block h-2.5 w-24 rounded bg-fondo"><i className={`block h-2.5 rounded ${color(pct(o, p))}`} style={{ width: `${Math.min(100, pct(o, p))}%` }} /></i><span className="w-14 text-right">{uca(o, p)}</span></span>);
+          const fila = (x: F, tot = false) => (
+            <tr key={(tot ? "T" : "") + x.k} className={`border-b border-borde text-right tabular-nums ${tot ? "bg-grafito/10 font-bold" : ""}`}>
+              <td className={`px-2 py-1.5 text-left ${tot ? "" : "pl-6"}`}>{tot ? `${x.k} · ${x.pas} pasillos` : x.k}</td>
+              <td className="px-2 py-1.5">{alt(x.o12 ?? 0, x.p12 ?? 0)}</td><td className="px-2 py-1.5">{alt(x.o18 ?? 0, x.p18 ?? 0)}</td>
+              <td className="px-2 py-1.5">{fmtNum(x.oc)} <span className="text-suave">/ {fmtNum(x.pos)}</span></td><td className="px-2 py-1.5">{barra(x.oc, x.pos)}</td>
+              <td className="px-2 py-1.5 text-green-700">{fmtNum(x.pos - x.oc)}</td><td className="px-2 py-1.5">{fmtNum(Number(x.u ?? 0))}</td></tr>);
+          return (
+            <section className="rounded-xl bg-tarjeta p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-semibold text-marca">UCA por pasillo y altura <span className="text-xs font-normal text-suave">· ocupadas / posiciones</span></h2>
+                <a href={qs(sp.vacios !== "1")} className="text-sm text-suave underline">{sp.vacios === "1" ? "Ocultar pasillos vacíos" : `Mostrar ${vacios} pasillos vacíos`}</a>
+              </div>
+              <div className="overflow-x-auto"><table className="w-full min-w-[860px] text-sm">
+                <thead className="bg-grafito text-white"><tr>{["Área / pasillo", "Altura 1.20", "Altura 1.80", "Total ocupadas", "UCA", "Libres", "Unidades"].map((h, i) => <th key={h} className={`px-2 py-2 font-semibold ${i ? "text-right" : "text-left"}`}>{h}</th>)}</tr></thead>
+                <tbody>{areas.map((ar) => { const xs = P.filter((x) => x.a === ar), vs = ver.filter((x) => x.a === ar);
+                  const t: F = { k: ar, pas: xs.length, pos: suma(xs, "pos"), oc: suma(xs, "oc"), u: suma(xs, "u"), p12: suma(xs, "p12"), o12: suma(xs, "o12"), p18: suma(xs, "p18"), o18: suma(xs, "o18") };
+                  return [fila(t, true), ...vs.map((x) => fila(x))]; })}
+                  {(() => { const t: F = { k: "TOTAL", pas: P.length, pos: suma(P, "pos"), oc: suma(P, "oc"), u: suma(P, "u"), p12: suma(P, "p12"), o12: suma(P, "o12"), p18: suma(P, "p18"), o18: suma(P, "o18") }; return fila(t, true); })()}
+                </tbody></table></div>
+              <p className="mt-2 text-xs text-suave">Cada área muestra su subtotal arriba. Los pasillos sin ninguna paleta se ocultan para leer mejor (siguen sumando en el total).</p>
+            </section>);
+        })()}
       </>)}
     </div>
   );
