@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function mermaLote(filas: Record<string, unknown>[], carga: string | null) {
   const s = await createClient();
-  const { error } = await s.from("merma").upsert(filas.map((x) => ({ ...x, carga_id: carga })), { onConflict: "lpn,cod_alternat,fecha" });
+  const { error } = await s.from("merma").upsert(filas.map((x) => ({ ...x, carga_id: carga })), { onConflict: "lpn,cod_alternat,fecha,linea" });
   return error ? { ok: false, mensaje: error.message.includes("row-level") ? "Tu usuario no puede cargar merma." : error.message } : { ok: true, mensaje: "" };
 }
 export async function mermaIniciar(archivo: string, filas: number) {
