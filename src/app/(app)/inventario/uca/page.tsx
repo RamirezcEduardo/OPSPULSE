@@ -7,17 +7,17 @@ import { CargarUca } from "./Cargar";
 
 export const dynamic = "force-dynamic";
 type F = { k: string; a?: string; pos: number; oc: number; u?: number; pas?: number; p12?: number; o12?: number; p18?: number; o18?: number };
-type D = { corte: string | null; posiciones: number; kpi: { pos: number; oc: number; u: number }; areas: F[] | null; pasillos: F[] | null; alturas: F[] | null; niveles: F[] | null;
-  historial: { corte: string; pos: number; oc: number }[] | null; opciones: { areas: string[] | null; niveles: number[] | null } };
+type D = { corte: string | null; posiciones: number; kpi: { pos: number; oc: number; u: number }; areas: F[] | null; pasillos: F[] | null; alturas: F[] | null; niveles: F[] | null; bahias: F[] | null;
+  historial: { corte: string; pos: number; oc: number }[] | null; opciones: { areas: string[] | null; niveles: number[] | null; pasillos: string[] | null; bahias: number[] | null } };
 const pct = (oc: number, pos: number) => (pos ? (oc / pos) * 100 : 0);
 const color = (p: number) => (p >= 85 ? "bg-red-600" : p >= 70 ? "bg-amber-500" : "bg-green-600");
 const txt = (p: number) => (p >= 85 ? "text-red-600" : p >= 70 ? "text-amber-600" : "text-green-700 dark:text-green-400");
 
-export default async function Uca({ searchParams }: { searchParams: Promise<{ area?: string; altura?: string; nivel?: string; vacios?: string }> }) {
+export default async function Uca({ searchParams }: { searchParams: Promise<{ area?: string; altura?: string; nivel?: string; vacios?: string; pasillo?: string; bahia?: string }> }) {
   const sp = await searchParams;
   const s = await createClient();
   const { nivel } = await obtenerPermisos();
-  const { data } = await s.rpc("uca_dash", { p_area: sp.area || null, p_altura: sp.altura || null, p_nivel: sp.nivel ? Number(sp.nivel) : null });
+  const { data } = await s.rpc("uca_dash", { p_area: sp.area || null, p_altura: sp.altura || null, p_nivel: sp.nivel ? Number(sp.nivel) : null, p_pasillo: sp.pasillo || null, p_bahia: sp.bahia ? Number(sp.bahia) : null });
   const d = data as D | null;
   const puede = nivel("/inventario/uca") === "editar";
   const k = d?.kpi ?? { pos: 0, oc: 0, u: 0 };
@@ -33,8 +33,11 @@ export default async function Uca({ searchParams }: { searchParams: Promise<{ ar
           <label className="flex flex-col gap-1 text-xs text-suave">Área<select name="area" defaultValue={sp.area ?? ""} className={sel}><option value="">Todas</option>{(d.opciones.areas ?? []).sort().map((a) => <option key={a}>{a}</option>)}</select></label>
           <label className="flex flex-col gap-1 text-xs text-suave">Altura<select name="altura" defaultValue={sp.altura ?? ""} className={sel}><option value="">Todas</option><option>1.20</option><option>1.80</option></select></label>
           <label className="flex flex-col gap-1 text-xs text-suave">Nivel<select name="nivel" defaultValue={sp.nivel ?? ""} className={sel}><option value="">Todos</option>{(d.opciones.niveles ?? []).sort((a, b) => a - b).map((n) => <option key={n}>{n}</option>)}</select></label>
+          <label className="flex flex-col gap-1 text-xs text-suave">Pasillo<select name="pasillo" defaultValue={sp.pasillo ?? ""} className={sel}><option value="">Todos</option>{(d.opciones.pasillos ?? []).filter(Boolean).sort().map((x) => <option key={x}>{x}</option>)}</select></label>
+          <label className="flex flex-col gap-1 text-xs text-suave">Bahía<select name="bahia" defaultValue={sp.bahia ?? ""} className={sel}><option value="">Todas</option>{(d.opciones.bahias ?? []).filter((x) => x != null).sort((a, b) => a - b).map((x) => <option key={x}>{x}</option>)}</select></label>
           <button className="h-9 rounded-lg bg-marca px-4 text-sm font-semibold text-white">Ver</button>
         </form>
+        <p className="-mt-3 text-xs text-suave">Elige un pasillo para ver la UCA por bahía; la lista de bahías se ajusta al área y pasillo después de tocar «Ver».</p>
         <section className="grid grid-cols-2 overflow-hidden rounded-xl bg-tarjeta sm:grid-cols-5">
           {[["Posiciones (paletas)", fmtNum(k.pos), ""], ["Ocupadas", fmtNum(k.oc), ""], ["Libres", fmtNum(k.pos - k.oc), "text-green-700"], ["UCA %", `${pct(k.oc, k.pos).toFixed(1)}%`, txt(pct(k.oc, k.pos))], ["Unidades en stock", fmtNum(Number(k.u)), ""]].map(([t, v, c]) => (
             <div key={t} className="text-center"><p className="bg-grafito py-1 text-xs font-semibold text-white">{t}</p><p className={`py-3 text-xl font-bold tabular-nums ${c}`}>{v}</p></div>))}
@@ -42,6 +45,8 @@ export default async function Uca({ searchParams }: { searchParams: Promise<{ ar
         <div className="grid gap-4 lg:grid-cols-2">
           <Barras titulo="UCA por área (%)" max={100} color={color} fmt={(n) => `${n.toFixed(1)}%`} datos={(d.areas ?? []).map((x) => [x.k, pct(x.oc, x.pos)] as [string, number])}
             enlace={(a) => `?${new URLSearchParams({ ...(sp.altura ? { altura: sp.altura } : {}), area: a })}`} leyenda={<><span>Verde &lt; 70%</span><span>Ámbar 70–85%</span><span>Rojo ≥ 85% (casi lleno)</span></>} />
+          {sp.pasillo && <Barras titulo={`UCA por bahía · ${sp.pasillo} (%)`} max={100} color={color} fmt={(n) => `${n.toFixed(1)}%`} datos={(d.bahias ?? []).map((x) => [`Bahía ${String(x.k).padStart(2, "0")}`, pct(x.oc, x.pos)] as [string, number])}
+            enlace={(b) => `?${new URLSearchParams({ ...Object.fromEntries(Object.entries(sp).filter(([kk, v]) => kk !== "bahia" && v) as [string, string][]), bahia: String(Number(b.replace("Bahía ", ""))) })}`} />}
           <Barras titulo="UCA por nivel (%)" max={100} color={color} fmt={(n) => `${n.toFixed(1)}%`} datos={(d.niveles ?? []).map((x) => [`Nivel ${x.k}`, pct(x.oc, x.pos)] as [string, number])} />
         </div>
         {(d.historial?.length ?? 0) > 1 && <Lineas titulo="Evolución de la UCA (%) por corte" min={0} series={["UCA"]} datos={(d.historial ?? []).map((h) => ({ x: `${h.corte.slice(8)}/${h.corte.slice(5, 7)}`, UCA: Math.round(pct(h.oc, h.pos) * 10) / 10 }))} />}
