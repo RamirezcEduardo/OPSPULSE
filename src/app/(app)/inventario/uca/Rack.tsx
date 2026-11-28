@@ -37,24 +37,24 @@ export function Rack({ pasillos, inicial }: { pasillos: { k: string; a: string; 
       {p ? <p className="text-sm text-suave">Cargando rack…</p> : !celdas.length ? <p className="text-sm text-suave">Sin posiciones para este pasillo.</p> : (<>
         <p className="mb-2 text-sm"><b>{pas}</b> · {fmtNum(oc)} de {fmtNum(celdas.length)} posiciones ocupadas · <b className="text-marca">{((oc / celdas.length) * 100).toFixed(1)}%</b></p>
         <div className="overflow-x-auto pb-2">
-          <table className="border-separate" style={{ borderSpacing: 2 }}>
+          <table className="border-collapse">
             <tbody>
               {niveles.map((n) => (
                 <tr key={n}>
                   <td className="sticky left-0 bg-tarjeta pr-2 text-right text-[10px] text-suave">Nv {n}</td>
                   {bahias.map((b) => { const cs = celdas.filter((c) => c.bahia === b && c.nivel === n); return (
-                    <td key={b} className="p-0 align-middle">
+                    <td key={b} className={`border-x-2 border-tarjeta px-[3px] py-[2px] align-middle ${bahias.indexOf(b) % 2 ? "bg-fondo" : "bg-grafito/10"}`}>
                       <div className="flex gap-[2px]">{cs.length ? cs.map((c) => (
                         <button key={c.ubicacion} onClick={() => setSel(c)} title={`${c.ubicacion} · ${c.unidades > 0 ? `${fmtNum(Number(c.unidades))} und` : "libre"}`}
                           className={`h-5 w-4 rounded-[3px] border ${sel?.ubicacion === c.ubicacion ? "border-grafito ring-2 ring-grafito" : c.unidades > 0 ? "border-orange-700/40" : "border-borde bg-white dark:bg-neutral-800"}`}
                           style={{ background: tono(c) }} />)) : <span className="block h-5 w-4" />}</div>
                     </td>); })}
                 </tr>))}
-              <tr><td />{bahias.map((b) => <td key={b} className="text-center text-[10px] text-suave">{String(b).padStart(2, "0")}</td>)}</tr>
+              <tr><td />{bahias.map((b, i) => <td key={b} className={`border-x-2 border-tarjeta text-center text-[10px] font-semibold ${i % 2 ? "bg-fondo" : "bg-grafito/10"}`}>B{String(b).padStart(2, "0")}</td>)}</tr>
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-suave">Abajo: número de bahía · Izquierda: nivel</p>
+        <p className="text-xs text-suave">Cada franja de color es una bahía (B01, B02…) con sus posiciones dentro · Izquierda: nivel</p>
         {sel && (
           <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 rounded-lg border border-borde p-3 text-sm">
             <b className="font-mono">{sel.ubicacion}</b><span>Bahía {sel.bahia} · Nivel {sel.nivel} · Altura {sel.altura ?? "—"}</span>
