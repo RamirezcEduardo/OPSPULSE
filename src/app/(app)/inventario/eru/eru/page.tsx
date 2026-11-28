@@ -31,6 +31,16 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
   const semanas = [...new Set(todo.map((x) => x.semana))].sort();
   const areas = [...new Set(todo.map((x) => x.area).filter(Boolean) as string[])].sort();
   const r = todo.filter((x) => (!sp.semana || x.semana === sp.semana) && (!sp.tipo || x.ubi === sp.tipo) && (!sp.area || x.area === sp.area));
+  // Comparación para la variación del ERU por área: periodo anterior equivalente
+  let previo: R[] = []; let etqVar = "";
+  const filtroTA = (x: R) => (!sp.tipo || x.ubi === sp.tipo) && (!sp.area || x.area === sp.area);
+  if (sp.semana) { const i = semanas.indexOf(sp.semana); previo = i > 0 ? todo.filter((x) => x.semana === semanas[i - 1] && filtroTA(x)) : []; etqVar = "vs sem. anterior"; }
+  else if (mes) {
+    const ant = meses[meses.indexOf(mes) + 1];
+    for (let d = 0; ant; d += 1000) { const { data } = await s.from("eru_resumen").select("mes,dia,semana,ubi,area,subarea,pasillo,nivel,contadas,con_error").eq("mes", ant).order("id").range(d, d + 999); previo.push(...((data ?? []) as R[])); if (!data || data.length < 1000) break; }
+    previo = previo.filter(filtroTA); etqVar = "vs mes anterior";
+  } else { const ult = [...new Set(todo.map((x) => x.semana))].sort().at(-1); previo = todo.filter((x) => x.semana !== ult && filtroTA(x)); etqVar = "cambio por la última semana"; }
+  const eruPrevio = new Map(eruPor(previo, (x) => x.area));
   const sum = (a: R[]) => [a.reduce((t, x) => t + x.contadas, 0), a.reduce((t, x) => t + x.con_error, 0)] as const;
   const [c, e] = sum(r); const [ca, ea] = sum(r.filter((x) => x.ubi === "ACTIVO")); const [cr, er] = sum(r.filter((x) => x.ubi === "RESERVA"));
   const color = (x: number) => (x >= 0.98 ? "text-green-700" : x < 0.95 ? "text-marca" : "text-amber-600");
@@ -107,7 +117,8 @@ export default async function Eru({ searchParams }: { searchParams: Promise<{ me
           <Lineas titulo="ERU por semana" etiquetas datos={serie((x) => x.semana)} series={["ERU"]} />
           <Lineas titulo="ERU por día" datos={serie((x) => x.dia, (d) => `${d.slice(8)}/${d.slice(5, 7)}`)} series={["ERU"]} min={0} />
           <Barras titulo="Pérdida neta por producto (top 15)" datos={perdida} />
-          <Barras titulo="ERU por área · toca un área para ver su detalle" enlace={(k) => `?${new URLSearchParams({ ...(mes ? { mes } : {}), area: k })}`} max={100} datos={eruPor(r.filter((x) => x.area), (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n.toFixed(1)}%`} color={semaforo}
+          <Barras extra={(k) => { const a = eruPor(r.filter((x) => x.area === k), (x) => x.area)[0]?.[1]; const b = eruPrevio.get(k); if (a == null || b == null) return null; const dlt = Math.round((a - b) * 10) / 10;
+            return <span title={etqVar} className={`ml-1.5 text-[11px] font-semibold ${dlt > 0 ? "text-green-600" : dlt < 0 ? "text-red-600" : "text-suave"}`}>{dlt > 0 ? "▲" : dlt < 0 ? "▼" : "="}{dlt ? Math.abs(dlt).toFixed(1) : ""}</span>; }} titulo={`ERU por área · toca un área para ver su detalle · ▲▼ ${etqVar}`} enlace={(k) => `?${new URLSearchParams({ ...(mes ? { mes } : {}), area: k })}`} max={100} datos={eruPor(r.filter((x) => x.area), (x) => x.area).sort((a, b) => a[1] - b[1])} fmt={(n) => `${n.toFixed(1)}%`} color={semaforo}
             leyenda={<><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-red-600" />Menor a 95%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-amber-400" />Entre 95% y 98%</span><span className="flex items-center gap-1"><i className="inline-block h-3 w-3 bg-green-600" />Desde 98%</span></>} />
           <Barras titulo="Productos con más incidencias ERU (top 15)" datos={top.map((x) => [x.d, x.n] as [string, number])} color={() => "bg-red-600"} />
         </div>

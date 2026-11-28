@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { fmtNum } from "@/lib/formato";
 
-export function Barras({ titulo, datos, fmt = fmtNum, color, max: maxFijo, leyenda, enlace }: { titulo: string; datos: [string, number][]; fmt?: (n: number) => string; color?: (v: number) => string; max?: number; leyenda?: React.ReactNode; enlace?: (k: string) => string }) {
+export function Barras({ titulo, datos, fmt = fmtNum, color, max: maxFijo, leyenda, enlace, extra }: { titulo: string; datos: [string, number][]; fmt?: (n: number) => string; color?: (v: number) => string; max?: number; leyenda?: React.ReactNode; enlace?: (k: string) => string; extra?: (k: string) => React.ReactNode }) {
   const max = maxFijo ?? Math.max(1, ...datos.map(([, v]) => Math.abs(v)));
   return (
     <section className="rounded-xl bg-tarjeta p-5">
@@ -11,7 +11,7 @@ export function Barras({ titulo, datos, fmt = fmtNum, color, max: maxFijo, leyen
           <li key={k} title={`${k}: ${fmt(v)}`} className="grid grid-cols-[minmax(0,11rem)_1fr_auto] items-center gap-3 text-sm">
             {enlace ? <Link href={enlace(k)} className="truncate text-marca underline-offset-2 hover:underline">{k}</Link> : <span className="truncate text-suave">{k}</span>}
             <span className={`h-3.5 rounded-r ${color ? color(v) : "bg-texto/70 hover:bg-marca"}`} style={{ width: `${(Math.abs(v) / max) * 100}%` }} />
-            <span className="tabular-nums">{fmt(v)}</span>
+            <span className="whitespace-nowrap tabular-nums">{fmt(v)}{extra?.(k)}</span>
           </li>))}</ul>)}
       {leyenda && <div className="mt-3 flex flex-wrap gap-3 text-xs text-suave">{leyenda}</div>}
     </section>
