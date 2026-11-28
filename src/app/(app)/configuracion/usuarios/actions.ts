@@ -36,3 +36,9 @@ export async function nuevaClave(id: string, password: string): Promise<Resultad
   const { error } = await (await createClient()).rpc("admin_cambiar_clave", { p_id: id, p_password: password });
   return error ? { ok: false, mensaje: limpiar(error.message) } : { ok: true, mensaje: "Contraseña actualizada." };
 }
+
+export async function editarUsuario(id: string, nombre: string, dni: string, puesto: string): Promise<Resultado> {
+  const { error } = await (await createClient()).rpc("admin_editar_usuario", { p_id: id, p_nombre: nombre, p_dni: dni, p_puesto: puesto });
+  revalidatePath("/configuracion/usuarios");
+  return error ? { ok: false, mensaje: error.message } : { ok: true, mensaje: "Datos actualizados ✓" };
+}

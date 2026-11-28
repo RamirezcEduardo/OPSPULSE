@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { ROLES, type Rol } from "@/lib/roles";
-import { cambiarAcceso, cambiarRol, crearUsuario, nuevaClave } from "./actions";
+import { cambiarAcceso, cambiarRol, crearUsuario, nuevaClave, editarUsuario } from "./actions";
 
 const campo = "h-11 rounded-lg border border-borde bg-tarjeta px-3";
 
@@ -38,6 +38,8 @@ type U = { id: string; usuario: string; nombre: string; dni: string; puesto: str
 export function FilaUsuario({ u, esYo }: { u: U; esYo: boolean }) {
   const [pendiente, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
+  const [ed, setEd] = useState<{ nombre: string; dni: string; puesto: string } | null>(null);
+  const inp = "h-9 w-full rounded-lg border border-borde bg-tarjeta px-2";
   const correr = (fn: () => Promise<unknown>) =>
     start(async () => {
       setMsg(null);
@@ -46,10 +48,10 @@ export function FilaUsuario({ u, esYo }: { u: U; esYo: boolean }) {
 
   return (
     <tr className={`border-b border-borde ${pendiente ? "opacity-60" : ""}`}>
-      <td className="px-2 py-2 font-medium">{u.nombre || "—"}{esYo && <span className="ml-1 text-xs text-suave">(tú)</span>}</td>
+      <td className="px-2 py-2 font-medium">{ed ? <input aria-label="Nombre" value={ed.nombre} onChange={(e) => setEd({ ...ed, nombre: e.target.value })} className={inp} /> : <>{u.nombre || "—"}{esYo && <span className="ml-1 text-xs text-suave">(tú)</span>}</>}</td>
       <td className="px-2 py-2">{u.usuario}</td>
-      <td className="px-2 py-2">{u.dni || "—"}</td>
-      <td className="px-2 py-2">{u.puesto || "—"}</td>
+      <td className="px-2 py-2">{ed ? <input aria-label="DNI" inputMode="numeric" value={ed.dni} onChange={(e) => setEd({ ...ed, dni: e.target.value })} className={`${inp} w-28`} /> : u.dni || "—"}</td>
+      <td className="px-2 py-2">{ed ? <input aria-label="Puesto" value={ed.puesto} onChange={(e) => setEd({ ...ed, puesto: e.target.value })} className={inp} /> : u.puesto || "—"}</td>
       <td className="px-2 py-2">
         <select aria-label={`Rol de ${u.usuario}`} defaultValue={u.rol} disabled={esYo}
           onChange={(e) => correr(() => cambiarRol(u.id, e.target.value as Rol))}
@@ -65,10 +67,16 @@ export function FilaUsuario({ u, esYo }: { u: U; esYo: boolean }) {
         </button>
       </td>
       <td className="px-2 py-2">
+        <div className="flex flex-wrap gap-3">
+        {ed ? <>
+          <button className="text-xs font-semibold text-green-700 hover:underline" onClick={() => correr(async () => { const r = await editarUsuario(u.id, ed.nombre, ed.dni, ed.puesto); setMsg(r.mensaje); if (r.ok) setEd(null); })}>Guardar</button>
+          <button className="text-xs text-suave hover:underline" onClick={() => setEd(null)}>Cancelar</button>
+        </> : <button className="text-xs font-semibold text-marca hover:underline" onClick={() => setEd({ nombre: u.nombre ?? "", dni: u.dni ?? "", puesto: u.puesto ?? "" })}>Editar</button>}
         <button className="text-xs text-marca hover:underline" onClick={() => {
           const p = prompt(`Nueva contraseña para ${u.usuario} (mín. 8 caracteres)`);
           if (p) correr(async () => { const r = await nuevaClave(u.id, p); setMsg(r.mensaje); });
         }}>Cambiar contraseña</button>
+        </div>
         {msg && <p role="status" className="text-xs text-suave">{msg}</p>}
       </td>
     </tr>
