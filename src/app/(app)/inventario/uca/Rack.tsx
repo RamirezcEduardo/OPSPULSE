@@ -5,9 +5,12 @@ import { fmtNum } from "@/lib/formato";
 import { ucaRack, type Celda } from "./actions";
 
 /** Vista 2D del frente del rack: columnas = bahías, filas = niveles (arriba el más alto); cada cuadro = una posición (paleta). */
-export function Rack({ pasillos, inicial, altura, nivel, bahia }: { pasillos: { k: string; pos: number; oc: number }[]; inicial?: string; altura?: string; nivel?: number; bahia?: number }) {
-  const fuera = (c: Celda) => (altura && c.altura !== altura) || (nivel != null && c.nivel !== nivel) || (bahia != null && c.bahia !== bahia);
-  const [pas, setPas] = useState(inicial ?? pasillos[0]?.k ?? "");
+export function Rack({ pasillos, inicial }: { pasillos: { k: string; a: string; pos: number; oc: number }[]; inicial?: string }) {
+  const areas = useMemo(() => [...new Set(pasillos.map((x) => x.a))].sort(), [pasillos]);
+  const [area, setArea] = useState(pasillos.find((x) => x.k === inicial)?.a ?? areas[0] ?? "");
+  const lista = useMemo(() => pasillos.filter((x) => x.a === area).sort((x, y) => x.k.localeCompare(y.k, "es", { numeric: true })), [pasillos, area]);
+  const [pas, setPas] = useState(inicial && pasillos.some((x) => x.k === inicial) ? inicial : lista[0]?.k ?? "");
+  const cambiarArea = (a: string) => { setArea(a); setPas(pasillos.filter((x) => x.a === a).sort((x, y) => x.k.localeCompare(y.k, "es", { numeric: true }))[0]?.k ?? ""); };
   const [celdas, setCeldas] = useState<Celda[]>([]);
   const [sel, setSel] = useState<Celda | null>(null);
   const [p, start] = useTransition();
@@ -21,13 +24,13 @@ export function Rack({ pasillos, inicial, altura, nivel, bahia }: { pasillos: { 
     <section className="rounded-xl bg-tarjeta p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div><h2 className="font-semibold text-marca">Vista del rack · frente del pasillo</h2>
-          <p className="text-xs text-suave">Cada cuadro es una posición (paleta). Naranja = ocupada (más intenso = más unidades) · blanco = libre. Toca una posición para ver su detalle.{(altura || nivel != null || bahia != null) && " Las posiciones fuera del filtro (altura, nivel, bahía) se ven atenuadas."}</p></div>
-        <label className="flex items-center gap-2 text-sm">Pasillo
-          <select value={pas} onChange={(e) => setPas(e.target.value)} className="h-9 rounded-lg border border-borde bg-tarjeta px-2">
-            {pasillos.map((x) => <option key={x.k} value={x.k}>{x.k} · {x.pos ? Math.round((x.oc / x.pos) * 100) : 0}%</option>)}</select></label>
+          <p className="text-xs text-suave">Cada cuadro es una posición (paleta). Naranja = ocupada (más intenso = más unidades) · blanco = libre. Toca una posición para ver su detalle. Esta vista tiene su propio filtro de área; no la afectan los filtros de arriba.</p></div>
+        <label className="flex items-center gap-2 text-sm">Área
+          <select value={area} onChange={(e) => cambiarArea(e.target.value)} className="h-9 rounded-lg border border-borde bg-tarjeta px-2">
+            {areas.map((a) => <option key={a} value={a}>{a || "Sin área"}</option>)}</select></label>
       </div>
       {/* Selector rápido de pasillos como mapa */}
-      <div className="mb-4 flex flex-wrap gap-1.5">{pasillos.map((x) => { const u = x.pos ? x.oc / x.pos : 0; return (
+      <div className="mb-4 flex flex-wrap gap-1.5">{lista.map((x) => { const u = x.pos ? x.oc / x.pos : 0; return (
         <button key={x.k} onClick={() => setPas(x.k)} title={`${x.k}: ${x.oc}/${x.pos}`}
           className={`rounded-md border px-2 py-1 text-xs font-semibold ${pas === x.k ? "border-marca ring-2 ring-marca" : "border-borde"}`}
           style={{ background: `rgba(234,108,0,${0.08 + u * 0.8})`, color: u > 0.55 ? "white" : undefined }}>{x.k.split("-")[1] ?? x.k}</button>); })}</div>
@@ -44,7 +47,7 @@ export function Rack({ pasillos, inicial, altura, nivel, bahia }: { pasillos: { 
                       <div className="flex gap-[2px]">{cs.length ? cs.map((c) => (
                         <button key={c.ubicacion} onClick={() => setSel(c)} title={`${c.ubicacion} · ${c.unidades > 0 ? `${fmtNum(Number(c.unidades))} und` : "libre"}`}
                           className={`h-5 w-4 rounded-[3px] border ${sel?.ubicacion === c.ubicacion ? "border-grafito ring-2 ring-grafito" : c.unidades > 0 ? "border-orange-700/40" : "border-borde bg-white dark:bg-neutral-800"}`}
-                          style={{ background: tono(c), opacity: fuera(c) ? 0.2 : 1 }} />)) : <span className="block h-5 w-4" />}</div>
+                          style={{ background: tono(c) }} />)) : <span className="block h-5 w-4" />}</div>
                     </td>); })}
                 </tr>))}
               <tr><td />{bahias.map((b) => <td key={b} className="text-center text-[10px] text-suave">{String(b).padStart(2, "0")}</td>)}</tr>
