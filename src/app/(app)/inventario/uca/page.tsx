@@ -5,6 +5,7 @@ import { Barras } from "@/components/Graficos";
 import { Lineas } from "@/components/Lineas";
 import { CargarUca } from "./Cargar";
 import { Rack } from "./Rack";
+import { Planta } from "./Planta";
 
 export const dynamic = "force-dynamic";
 type F = { k: string; a?: string; pos: number; oc: number; u?: number; pas?: number; p12?: number; o12?: number; p18?: number; o18?: number };
@@ -20,6 +21,8 @@ export default async function Uca({ searchParams }: { searchParams: Promise<{ ar
   const { nivel } = await obtenerPermisos();
   const { data } = await s.rpc("uca_dash", { p_area: sp.area || null, p_altura: sp.altura || null, p_nivel: sp.nivel ? Number(sp.nivel) : null, p_pasillo: sp.pasillo || null, p_bahia: sp.bahia ? Number(sp.bahia) : null });
   const d = data as D | null;
+  const { data: dp } = sp.pasillo || sp.bahia ? await s.rpc("uca_dash", { p_area: sp.area || null, p_altura: sp.altura || null, p_nivel: sp.nivel ? Number(sp.nivel) : null, p_pasillo: null, p_bahia: null }) : { data };
+  const plano = ((dp as D | null)?.pasillos ?? []).filter((x) => x.pos);
   const puede = nivel("/inventario/uca") === "editar";
   const k = d?.kpi ?? { pos: 0, oc: 0, u: 0 };
   const sel = "h-9 rounded-lg border border-borde bg-tarjeta px-2 text-sm text-texto";
@@ -50,7 +53,8 @@ export default async function Uca({ searchParams }: { searchParams: Promise<{ ar
             enlace={(b) => `?${new URLSearchParams({ ...Object.fromEntries(Object.entries(sp).filter(([kk, v]) => kk !== "bahia" && v) as [string, string][]), bahia: String(Number(b.replace("Bahía ", ""))) })}`} />}
           <Barras titulo="UCA por nivel (%)" max={100} color={color} fmt={(n) => `${n.toFixed(1)}%`} datos={(d.niveles ?? []).map((x) => [`Nivel ${x.k}`, pct(x.oc, x.pos)] as [string, number])} />
         </div>
-        <Rack key={sp.pasillo ?? ""} inicial={sp.pasillo} pasillos={(d.pasillos ?? []).map((x) => ({ k: x.k, pos: x.pos, oc: x.oc }))} />
+        <Planta pasillos={plano} sp={sp} />
+        <div id="rack" className="scroll-mt-4"><Rack key={sp.pasillo ?? ""} inicial={sp.pasillo} altura={sp.altura} nivel={sp.nivel ? Number(sp.nivel) : undefined} bahia={sp.bahia ? Number(sp.bahia) : undefined} pasillos={plano.map((x) => ({ k: x.k, pos: x.pos, oc: x.oc }))} /></div>
         {(d.historial?.length ?? 0) > 1 && <Lineas titulo="Evolución de la UCA (%) por corte" min={0} series={["UCA"]} datos={(d.historial ?? []).map((h) => ({ x: `${h.corte.slice(8)}/${h.corte.slice(5, 7)}`, UCA: Math.round(pct(h.oc, h.pos) * 10) / 10 }))} />}
         {(() => {
           const P = d.pasillos ?? [];
