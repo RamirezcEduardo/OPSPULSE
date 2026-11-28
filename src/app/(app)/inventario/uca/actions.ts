@@ -25,3 +25,10 @@ export async function ucaCerrar(corte: string | null, archivo: string, n: number
   await s.from("carga").insert({ fuente: "CONTEO", archivo: `UCA · ${archivo}`, filas: n, insertadas: n, cargado_por: cl?.claims?.sub });
   revalidatePath("/inventario/uca");
 }
+
+export type Celda = { ubicacion: string; bahia: number; nivel: number; altura: string | null; unidades: number; lpns: number; skus: number };
+export async function ucaRack(pasillo: string) {
+  const s = await createClient();
+  const { data } = await s.rpc("uca_rack", { p_pasillo: pasillo });
+  return (data ?? []) as Celda[];
+}

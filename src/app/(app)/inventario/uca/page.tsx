@@ -4,6 +4,7 @@ import { fmtNum } from "@/lib/formato";
 import { Barras } from "@/components/Graficos";
 import { Lineas } from "@/components/Lineas";
 import { CargarUca } from "./Cargar";
+import { Rack } from "./Rack";
 
 export const dynamic = "force-dynamic";
 type F = { k: string; a?: string; pos: number; oc: number; u?: number; pas?: number; p12?: number; o12?: number; p18?: number; o18?: number };
@@ -49,6 +50,7 @@ export default async function Uca({ searchParams }: { searchParams: Promise<{ ar
             enlace={(b) => `?${new URLSearchParams({ ...Object.fromEntries(Object.entries(sp).filter(([kk, v]) => kk !== "bahia" && v) as [string, string][]), bahia: String(Number(b.replace("Bahía ", ""))) })}`} />}
           <Barras titulo="UCA por nivel (%)" max={100} color={color} fmt={(n) => `${n.toFixed(1)}%`} datos={(d.niveles ?? []).map((x) => [`Nivel ${x.k}`, pct(x.oc, x.pos)] as [string, number])} />
         </div>
+        <Rack key={sp.pasillo ?? ""} inicial={sp.pasillo} pasillos={(d.pasillos ?? []).map((x) => ({ k: x.k, pos: x.pos, oc: x.oc }))} />
         {(d.historial?.length ?? 0) > 1 && <Lineas titulo="Evolución de la UCA (%) por corte" min={0} series={["UCA"]} datos={(d.historial ?? []).map((h) => ({ x: `${h.corte.slice(8)}/${h.corte.slice(5, 7)}`, UCA: Math.round(pct(h.oc, h.pos) * 10) / 10 }))} />}
         {(() => {
           const P = d.pasillos ?? [];
